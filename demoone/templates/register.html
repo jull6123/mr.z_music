@@ -1,0 +1,26 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>register</title>
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap-3.4.1/css/bootstrap.css' %}">
+</head>
+<body>
+<h1>用户注册</h1>
+<a class="btn btn-primary btn-xs" style="margin-bottom: 20px" href="/login/">返回登录</a>
+
+
+<form method="post" action="/register/">
+    {% csrf_token %}
+    <input type="text" name="user" placeholder="用户名">
+    <input type="password" name="pwd" placeholder="密码">
+    <input type="text" name="email" placeholder="邮箱">
+    <input type="text" name="desc" placeholder="描述">
+    <input type="submit" value="提交">
+    <span style="color: red">{{ error_msg }}</span>
+</form>
+<script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-3.4.1/js/bootstrap.min.js' %}"></script>
+</body>
+</html>
