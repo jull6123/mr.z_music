@@ -127,7 +127,7 @@ def down(request):
 def change(request):
     uid = request.GET.get('uid')
     nid = request.GET.get("nid")
-    music = models.sysmusic.objects.filter(id=nid, is_delete=False).first()
+    # music = models.sysmusic.objects.filter(id=nid, is_delete=False).first()
     # music.url得到文件，算法函数
     # 将生成结果新增至数据库中，更新相应的pid=nid,uid=uid
 
