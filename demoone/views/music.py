@@ -1,3 +1,6 @@
+import os
+
+from django.http import FileResponse
 from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.core.files.storage import FileSystemStorage
@@ -9,6 +12,10 @@ from demoone import models
 
 # 导入form包
 from django import forms
+
+from django.conf import settings
+
+
 # 这里规定models的类，在用modelform的时候必须要有这么一个类
 class MusicModelForm(forms.ModelForm):
 
@@ -124,7 +131,17 @@ def musicDelete(request):
 
 
 def down(request):
-    return HttpResponse("OK")
+    uid = request.GET.get('uid')
+    nid = request.GET.get("nid")
+    music = models.sysmusic.objects.filter(id=nid, uid=uid).first()
+    if music is not None:
+        # 获取音乐文件的路径，这里假设音乐文件是存储在本地的
+        musicurl = unquote(music.url)
+        music_file_path = "E:/program/newdemo/" + musicurl
+        print(musicurl, music_file_path)
+        return FileResponse(open(music_file_path, 'rb'), as_attachment=True, filename=f"{music.name}.mp3")
+    return HttpResponse("下载错误")
+
 
 
 def change(request):
