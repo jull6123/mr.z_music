@@ -106,14 +106,10 @@
                                             <a class="btn btn-primary btn-xs" href="/music/down/?nid={{ music.id }}&uid={{ user.id }}">下载</a>
                                             <a class="btn btn-primary btn-xs" href="/music/change/?nid={{ music.id }}&uid={{ user.id }}">算法生成new</a>
                                             <a class="btn btn-primary btn-xs" href="/music/theList/?nid={{ music.id }}&uid={{ user.id }}">与该音乐相关</a>
-{#                                            <audio controls id="audio-player">#}
-{#                                                Your browser does not support the audio element.#}
-{#                                            </audio>#}
-{##}
-{#                                            <!-- 设置一个隐藏的输入字段，用于从 HTML 端传入可变的 URL -->#}
-{#                                            <input type="hidden" id="music-url" value="{{ music.url }}">#}
-{##}
-{#                                            <button onclick="playLocalMusic()">播放</button>#}
+                                            <audio controls>
+                                                <source src="{{ music.url }}" type="audio/mpeg">
+                                                Your browser does not support the audio element.
+                                            </audio>
                                         {% endif %}
                                     </td>
                                 </tr>

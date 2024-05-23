@@ -2,6 +2,8 @@ from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.core.files.storage import FileSystemStorage
 import hashlib
+from django.shortcuts import render
+from urllib.parse import unquote
 
 from demoone import models
 
@@ -108,7 +110,8 @@ def musicList(request):
     else:
         music_list = models.sysmusic.objects.all().order_by('create_time')
     for music in music_list:
-        print(music)
+        musicurl = unquote(music.url)
+        print(musicurl, music.url)
     return render(request, 'music/musicList.html', {"user": user, 'music_list': music_list})
 
 

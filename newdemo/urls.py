@@ -20,11 +20,10 @@ from django.urls import path
 
 urlpatterns = [
     # path("admin/", admin.site.urls),
-    path('login/', hviews.login),
+    path('', hviews.login),
     path('register/', hviews.register),
     path("person/", hviews.person),
     path("update/", hviews.update),
-
 
     path("home/", hviews.home),
 
@@ -35,11 +34,9 @@ urlpatterns = [
     path("user/delete/", user.userDelete),
     path("user/<int:nid>/edit/", user.userEdit),
 
-
     path("music/down/", music.down),
     path("music/change/", music.change),
     path("music/theList/", music.theList),
-
     path("music/<int:uid>/search/", music.search),
     path("music/list/", music.musicList),
     path("music/add/", music.musicAdd),
@@ -50,4 +47,6 @@ urlpatterns = [
 from django.conf import settings
 from django.conf.urls.static import static
 
-# urlpatterns = [] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# 在开发环境中，为媒体文件配置 URL
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
