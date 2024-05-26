@@ -5,18 +5,105 @@
     <meta charset="UTF-8">
     <title>login</title>
     <link rel="stylesheet" href="{% static 'plugins/bootstrap-3.4.1/css/bootstrap.css' %}">
+    <style>
+        body {
+            background: url('https://cdn.pixabay.com/photo/2018/08/14/13/23/ocean-3605547_1280.jpg') no-repeat;
+            background-size: 100% 200%;
+        }
+
+        #login_box {
+            width: 40%;
+            height: 600px;
+            background-color: #00000060;
+            margin: auto;
+            margin-top: 10%;
+            text-align: center;
+            border-radius: 10px;
+            padding: 50px 50px;
+        }
+
+        h2 {
+            color: #ffffff90;
+            margin-top: 5%;
+        }
+
+        #input-box {
+            margin-top: 5%;
+        }
+
+        span {
+            color: #fff;
+        }
+
+        input {
+            border: 0;
+            width: 60%;
+            font-size: 15px;
+            color: #fff;
+            background: transparent;
+            border-bottom: 2px solid #fff;
+            padding: 5px 10px;
+            outline: none;
+            margin-top: 10px;
+        }
+
+        button {
+            margin-top: 50px;
+            margin-left: 20px;
+            width: 30%;
+            height: 30px;
+            border-radius: 10px;
+            border: 0;
+            color: #fff;
+            text-align: center;
+            line-height: 30px;
+            font-size: 15px;
+            background-image: linear-gradient(to right, #226c6d, #330867);
+        }
+
+        #sign_up {
+            margin-top: 45%;
+            margin-left: 60%;
+        }
+
+        a {
+            margin-top: 50px;
+            margin-left: 20px;
+            width: 30%;
+            height: 30px;
+            border-radius: 10px;
+            border: 0;
+            color: #fff;
+            text-align: center;
+            line-height: 30px;
+            font-size: 15px;
+            background-image: linear-gradient(to right, #226c6d, #330867);
+        }
+    </style>
 </head>
 <body>
-    <h1>用户登录</h1>
-    <a class="btn btn-primary btn-xs" style="margin-bottom: 20px" href="/register/">注册</a>
+<div id="login_box">
+    <h2>login</h2>
     <form method="post" action="">
         {% csrf_token %}
-        <input type="text" name="username" placeholder="用户名">
-        <input type="password" name="pwd" placeholder="密码">
-        <input type="submit" value="提交">
-        <span style="color: red">{{ error_msg }}</span>
+        <div id="input-box">
+            <input type="text" name="username" placeholder="用户名">
+        </div>
+        <div id="input-box">
+            <input type="password" name="pwd" placeholder="密码">
+        </div>
+        <button type="submit">submit</button>
+        <span>{{ error_msg }}</span>
+        <a href="/register/">注册</a>
     </form>
+</div>
+
 <script src="{% static 'js/jquery-3.7.1.min.js' %}"></script>
 <script src="{% static 'plugins/bootstrap-3.4.1/js/bootstrap.min.js' %}"></script>
+<script>
+    document.getElementById("register").onclick = function() {
+        window.location.href = "/register";
+    };
+</script>
 </body>
 </html>
