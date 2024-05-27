@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -40,9 +41,15 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "demoone.apps.DemooneConfig",
+
+]
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -89,12 +96,12 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "newdemo",
-        # "USER": "root",
-        # "PASSWORD": "Zyx1540@#",
-        # "HOST": "127.0.0.1",
-        "USER": "cs",
-        "PASSWORD": "Cs01",
-        "HOST": "192.168.31.137",
+        "USER": "root",
+        "PASSWORD": "Zyx1540@#",
+        "HOST": "127.0.0.1",
+        # "USER": "cs",
+        # "PASSWORD": "Cs01",
+        # "HOST": "192.168.31.137",
         "PORT": "3306",
     }
 }

@@ -43,10 +43,7 @@ urlpatterns = [
     path("music/delete/", music.musicDelete),
     path("music/<int:nid>/edit/", music.musicEdit),
 
-    path("app/",home.app)
-    path("playing/", home.playing),
-    path("help/",home.help),
-    path("ai/", home.ai),
+    path("test/", home.app),
 
 ]
 
