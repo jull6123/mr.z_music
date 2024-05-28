@@ -14,36 +14,41 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from demoone.views import hviews, music, user, home
-
+# from djangomusic.views import hviews, music, user, home
+from djangomusic.views import basicFuction
 from django.urls import path
 
 urlpatterns = [
     # path("admin/", admin.site.urls),
-    path('login/', hviews.login),
-    path('register/', hviews.register),
-    path("person/", hviews.person),
-    path("update/", hviews.update),
+    # path('login/', hviews.login),
+    # path('register/', hviews.register),
+    # path("person/", hviews.person),
+    # path("update/", hviews.update),
+    #
+    # path("home/", hviews.home),
+    #
+    # # 管理员界面对用户的增删改查
+    # path("user/<int:uid>/search/", user.search),
+    # path("user/list/", user.userList),
+    # path("user/add/", user.userAdd),
+    # path("user/delete/", user.userDelete),
+    # path("user/<int:nid>/edit/", user.userEdit),
+    #
+    # path("music/down/", music.down),
+    # path("music/change/", music.change),
+    # path("music/theList/", music.theList),
+    # path("music/<int:uid>/search/", music.search),
+    # path("music/list/", music.musicList),
+    # path("music/add/", music.musicAdd),
+    # path("music/delete/", music.musicDelete),
+    # path("music/<int:nid>/edit/", music.musicEdit),
+    #
+    # path("test/", home.app),
 
-    path("home/", hviews.home),
 
-    # 管理员界面对用户的增删改查
-    path("user/<int:uid>/search/", user.search),
-    path("user/list/", user.userList),
-    path("user/add/", user.userAdd),
-    path("user/delete/", user.userDelete),
-    path("user/<int:nid>/edit/", user.userEdit),
-
-    path("music/down/", music.down),
-    path("music/change/", music.change),
-    path("music/theList/", music.theList),
-    path("music/<int:uid>/search/", music.search),
-    path("music/list/", music.musicList),
-    path("music/add/", music.musicAdd),
-    path("music/delete/", music.musicDelete),
-    path("music/<int:nid>/edit/", music.musicEdit),
-
-    path("test/", home.app),
+    path('login/', basicFuction.login),
+    path('register/', basicFuction.register),
+    path('updateperson/', basicFuction.updateperson),
 
 ]
 

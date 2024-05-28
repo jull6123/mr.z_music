@@ -7,7 +7,6 @@
       <div id="input-box">
         <input type="password" v-model="password" name="pwd" placeholder="密码">
       </div>
-      <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
       <button type="button" @click="submitForm">submit</button>
   </div>
 </template>
@@ -18,7 +17,6 @@ export default {
     return {
       username: '',
       password: '',
-      csrfToken: ''
     }
   },
   methods: {
@@ -26,11 +24,9 @@ export default {
       // 获取用户名和密码
       var username = this.username;
       var password = this.password;
-
-      fetch('http://127.0.0.1:9001/test/', {
+      fetch('http://127.0.0.1:9001/login/', {
         method: 'POST',
         headers: {
-          // 'X-CSRFToken': document.querySelector('input[name="csrfmiddlewaretoken"]').value,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username: username ,password:password}),
