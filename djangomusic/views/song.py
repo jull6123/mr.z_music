@@ -38,6 +38,80 @@ def serMusic(request):
     return JsonResponse({'code': 200, 'musicList': musicList, 'msg': "success"})
 
 def addMusic(request):
+    # 传参post表单+user+（pid)只有ai生成有       get/post区分 查看/修改
+    # mold = 1 网络音乐，先查看MD5是否重复，若重复直接返回msg="已存在"
+    #                  若不存在，则将post内容写入，add_sysMusic,
+    #                                          add_auditLog, sysMusic:is_upload=1,audit_id=id  return msg="已上传，等待审核"
+    # mold = 2 源音频，先查看MD5是否重复, post内容写入add_sysMusic，is_upload=0,uid=user.id return msg="源音频已上传，等待下一步"
+    # mold = 3 ai音乐，post内容写入add_sysMusic，is_upload=0,pid = pid ,uid=user.id return msg="AI歌曲创建成功，等待下一步"
+    # 表单提交
+#     import os
+# import hashlib
+# from django.conf import settings
+# from django.http import JsonResponse
+# from .models import Music
+#
+# def upload_music(request):
+#     if request.method == 'POST' and request.FILES.get('avatar') and request.FILES.get('musicFile'):
+#         name = request.POST.get('name')
+#         singer = request.POST.get('singer')
+#         avatar = request.FILES['avatar']
+#         music_file = request.FILES['musicFile']
+#
+#         # Calculate MD5 hash of the music file
+#         music_hasher = hashlib.md5()
+#         for chunk in music_file.chunks():
+#             music_hasher.update(chunk)
+#         music_md5_hash = music_hasher.hexdigest()
+#
+#         # Save music file
+#         music_file_path = os.path.join(settings.MEDIA_ROOT, 'music', music_md5_hash + '.mp3')
+#         with open(music_file_path, 'wb') as f:
+#             for chunk in music_file.chunks():
+#                 f.write(chunk)
+#
+#         # Save avatar file
+#         avatar_path = os.path.join(settings.MEDIA_ROOT, 'avatars', avatar.name)
+#         with open(avatar_path, 'wb') as f:
+#             for chunk in avatar.chunks():
+#                 f.write(chunk)
+#
+#         # Save music info to database
+#         music = Music.objects.create(
+#             name=name,
+#             singer=singer,
+#             avatar=avatar_path,
+#             music_file=music_file_path,
+#             music_md5_hash=music_md5_hash
+#         )
+#
+#         # Generate URL for music
+#         music_url = request.build_absolute_uri(settings.MEDIA_URL + 'music/' + music_md5_hash + '.mp3')
+#
+#         return JsonResponse({'status': 'success', 'music_url': music_url})
+#     else:
+#         return JsonResponse({'status': 'error', 'message': 'Invalid request or missing files'})
+    data = json.loads(request.body)
+    user = data.get('user')
+    musicList = data.get('musicList')
+    pid = data.get('pid')
+    if request.method == 'GET':
+        music = models.sysMusic.objects.filter(id=musicList.id).first()
+        if music:
+            return JsonResponse({'code': 200, 'music': music, 'msg': "success"})
+        return JsonResponse({'code': 501, 'msg': "歌曲存在"})
+    elif request.method == 'POST':
+
+        # 更新用户信息
+        user.description = data.get('description', user.description)
+        if user.role is not None:
+            user.role = data.get('role', user.role)
+        # 更新头像
+        if 'avatar' in request.FILES:
+            user.avatar = request.FILES['avatar']
+        # 保存更新后的用户信息
+        user.save()
+        return JsonResponse({'code': 200, 'user': user, 'msg': '用户信息更新成功'})
     return None
 
 def createMusic(request):
