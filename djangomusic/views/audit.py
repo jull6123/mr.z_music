@@ -1,6 +1,10 @@
-def auditMusic(request):
+def getAuditList(request):
     return None
 
 
-def auditSongList(request):
+def auditById(request):
+    return None
+
+
+def auditResult(request):
     return None

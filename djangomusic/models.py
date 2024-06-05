@@ -10,6 +10,7 @@ class sysUser(models.Model):
     choiceR = (
         (0, "admin"),
         (1, "user"),
+        (2, "auditor")
     )
     role = models.IntegerField(choices=choiceR, default=1, verbose_name="角色标签,0:admin,1:user")
     create_time = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
@@ -35,7 +36,7 @@ class sysUser(models.Model):
 class songList(models.Model):
     name = models.CharField(max_length=20, verbose_name="歌单名")
     description = models.TextField(null=True, blank=True, verbose_name="歌单描述")
-    duration_time = models.TimeField(verbose_name="歌曲时长")
+    number = models.IntegerField(default=0, verbose_name="歌单含歌曲数量")
     avatar = models.ImageField(null=True, blank=True, upload_to='avater', verbose_name="歌单图片展示")
     support = models.IntegerField(default=0, verbose_name="点赞数")
     choiceU = (
@@ -44,7 +45,7 @@ class songList(models.Model):
         (2, "审核失败，无法上传"),
         (3, "审核成功，上传成功"),
     )
-    is_upload = models.IntegerField(choices=choiceU, default=1, verbose_name="上传标识")
+    is_upload = models.IntegerField(choices=choiceU, default=0, verbose_name="上传标识")
     audit_id = models.IntegerField(default=0, verbose_name="上传审核id")
     choiceD = (
         (0, "未删"),
@@ -130,16 +131,21 @@ class userMusic(models.Model):
 
 class auditLog(models.Model):
     songList_id = models.IntegerField(default=0, verbose_name="歌单id")
+    choiceM = (
+        (0, "music"),
+        (1, "songList"),
+    )
+    audit_mold = models.IntegerField(default=0, choices=choiceM, verbose_name="审核类型")
     music_id = models.IntegerField(default=0, verbose_name="歌曲id")
     audit_id = models.IntegerField(verbose_name="审核人id,便于查找审核记录")
-    choiceM = (
+    choiceS = (
         (0, "审核未开始"),
         (1, "歌曲审核中"),
         (2, "歌单审核中"),
         (3, "审核失败"),
         (4, "审核成功，可上传"),
     )
-    audit_mold = models.IntegerField(choices=choiceM, default=0, verbose_name="审核阶段")
+    audit_state = models.IntegerField(choices=choiceS, default=0, verbose_name="审核阶段")
     msg_content = models.TextField(verbose_name="审核结果")
     choiceD = (
         (0, "未删"),

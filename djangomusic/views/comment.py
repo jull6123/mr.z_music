@@ -1,8 +1,4 @@
-def getHotComments(request):
-    return None
-
-
-def getNewComments(request):
+def getComments(request):
     return None
 
 
