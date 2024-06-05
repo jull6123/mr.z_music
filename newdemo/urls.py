@@ -14,8 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-# from djangomusic.views import hviews, music, user, home
-from djangomusic.views import basicFuction
+from djangomusic.views import basicFuction, recommend, comment, user, audit
 from django.urls import path
 
 urlpatterns = [
@@ -46,9 +45,44 @@ urlpatterns = [
     # path("test/", home.app),
 
 
+    # 基本功能
     path('login/', basicFuction.login),
     path('register/', basicFuction.register),
+    # 个人信息与修改密码
     path('updateperson/', basicFuction.updateperson),
+
+    # 用户端相关功能
+    # 歌曲：增删改查+点赞+上传
+    path('listHistoryById/', user.listHistoryById),
+    path('serMusic/', user.serMusic),
+    path('addMusic/', user.addMusic),
+    path('delMusic/', user.delMuisc),
+    path('supportMusic', user.supportMusic),
+    path('uploadMusic', user.uploadMusic),
+    # 歌单：增删改查+点赞+收藏+上传
+    path('listSongListById/', user.listSongListById),
+    path('serSongList/', user.serSongList),
+    path('addSongList/', user.addSongList),
+    path('delSongList/', user.delSongList),
+    path('supportSongList/', user.supportSongList),
+    path('collectSongList/', user.collectSongList),
+    path('uploadSongList/', user.uploadSongList),
+    # 推荐界面
+    path("getOriginalSongs/", recommend.getOriginalSongs),
+    path("getHotSongs/", recommend.getHotSongs),
+    path("getNewSongs/", recommend.getNewSongs),
+    path("getHotLists/", recommend.getHotLists),
+    # 评论界面
+    path("getHotComments", comment.getHotComments),
+    path("getNewComments", comment.getNewComments),
+    path('addComment/', comment.addComment),
+    path('delComment/', comment.delComment),
+    path('supportComment', comment.supportComment),
+
+    # 审核端
+    path('auditMusic/', audit.auditMusic),
+    path('auditSongList/', audit.auditSongList),
+
 
 ]
 

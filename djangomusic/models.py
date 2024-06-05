@@ -19,6 +19,18 @@ class sysUser(models.Model):
     )
     delete_mark = models.IntegerField(choices=choiceD, default=0, verbose_name="删除标志,0:未删,1:已删")
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'description': self.description,
+            'avatar': self.avatar.url if self.avatar else None,
+            'role': self.get_role_display(),  # 获取选择的角色标签的显示值
+            'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'delete_mark': self.get_delete_mark_display(),  # 获取选择的删除标志的显示值
+        }
+
 
 class songList(models.Model):
     name = models.CharField(max_length=20, verbose_name="歌单名")
@@ -28,9 +40,12 @@ class songList(models.Model):
     support = models.IntegerField(default=0, verbose_name="点赞数")
     choiceU = (
         (0, "未上传"),
-        (1, "已上传"),
+        (1, "审核中"),
+        (2, "审核失败，无法上传"),
+        (3, "审核成功，上传成功"),
     )
-    is_upload = models.IntegerField(choices=choiceU, default=1, verbose_name="上传标识，针对AI歌曲")
+    is_upload = models.IntegerField(choices=choiceU, default=1, verbose_name="上传标识")
+    audit_id = models.IntegerField(default=0, verbose_name="上传审核id")
     choiceD = (
         (0, "未删"),
         (1, "已删"),
@@ -58,9 +73,12 @@ class sysMusic(models.Model):
     url = models.URLField(null=False, verbose_name="音频的url地址")
     choiceU = (
         (0, "未上传"),
-        (1, "已上传"),
+        (1, "审核中"),
+        (2, "审核失败，无法上传"),
+        (3, "审核成功，上传成功"),
     )
     is_upload = models.IntegerField(choices=choiceU, default=1, verbose_name="上传标识，针对AI歌曲")
+    audit_id = models.IntegerField(default=0, verbose_name="上传审核id")
     choiceD = (
         (0, "未删"),
         (1, "已删"),
@@ -108,3 +126,23 @@ class userMusic(models.Model):
     user_id = models.IntegerField(verbose_name="用户id")
     music_id = models.IntegerField(verbose_name="歌曲id")
     listen_time = models.DateTimeField(auto_now=True, verbose_name="听歌时间")
+
+
+class auditLog(models.Model):
+    songList_id = models.IntegerField(default=0, verbose_name="歌单id")
+    music_id = models.IntegerField(default=0, verbose_name="歌曲id")
+    audit_id = models.IntegerField(verbose_name="审核人id,便于查找审核记录")
+    choiceM = (
+        (0, "审核未开始"),
+        (1, "歌曲审核中"),
+        (2, "歌单审核中"),
+        (3, "审核失败"),
+        (4, "审核成功，可上传"),
+    )
+    audit_mold = models.IntegerField(choices=choiceM, default=0, verbose_name="审核阶段")
+    msg_content = models.TextField(verbose_name="审核结果")
+    choiceD = (
+        (0, "未删"),
+        (1, "已删"),
+    )
+    delete_mark = models.IntegerField(choices=choiceD, default=0, verbose_name="删除标志,0:未删,1:已删")

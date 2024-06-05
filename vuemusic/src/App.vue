@@ -19,6 +19,9 @@
             <el-button size="large" round="true"  style="width: 120px;" @click="testrouter">
               <span style="vertical-align: middle;">test</span>
             </el-button>
+            <el-button size="large" round="true"  style="width: 120px;" @click="testrouters">
+              <span style="vertical-align: middle;">person</span>
+            </el-button>
             <el-col :span="4" :style="{opacity:myopacity}"><div class="grid-content bg-white"></div></el-col>
               <div>  
                 <el-input v-model="input" style="width: 360px;"placeholder="输入你想录的歌，实现你的音乐梦想" size = "large" clearable/>
@@ -65,7 +68,10 @@
       this.$router.push({name:'Ai'});
     },
      testrouter(){
-       this.$router.push({name:'test'});
+       this.$router.push({name:'login'});
+     },
+     testrouters(){
+       this.$router.push({name:'person'});
      },
    }
   }

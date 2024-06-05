@@ -1,110 +1,80 @@
 <template>
-  <div id="login_box">
-    <h2>login</h2>
-      <div id="input-box">
-        <input type="text" v-model="username" name="username" placeholder="用户名">
-      </div>
-      <div id="input-box">
-        <input type="password" v-model="password" name="pwd" placeholder="密码">
-      </div>
-      <button type="button" @click="submitForm">submit</button>
+  <div class="wrapper">
+    <div style="margin: 200px auto; background-color: #fff; width: 350px; height: 300px; padding: 20px; border-radius: 10px">
+      <div style="margin: 20px 0; text-align: center; font-size: 24px"><b>登 录</b></div>
+      <el-form :model="user" :rules="rules" ref="userForm">
+        <el-form-item prop="username">
+          <el-input size="medium" style="margin: 10px 0" prefix-icon="el-icon-user"
+                    v-model="user.username"></el-input>
+        </el-form-item>
+        <el-form-item prop="password">
+          <el-input size="medium" style="margin: 10px 0" prefix-icon="el-icon-lock" show-password
+                    v-model="user.password"></el-input>
+        </el-form-item>
+        <el-form-item style="margin: 10px 0; text-align: right">
+          <el-button type="primary" size="small" autocomplete="off" @click="login">登录系统</el-button>
+          <el-button type="warning" size="small" autocomplete="off" @click="$router.push('/register')">注册
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </div>
   </div>
 </template>
 
 <script>
+// import {setRoute, setRoutes} from "../router";
+
 export default {
+  name: "Login",
   data() {
     return {
-      username: '',
-      password: '',
+      choose:"",
+      user: {},
+      rules: {
+        username: [
+          {required: true, message: '请输入用户名', trigger: 'blur'},
+          {min: 3, max: 10, message: '长度在 3 到 5 个字符', trigger: 'blur'}
+        ],
+        password: [
+          {required: true, message: '请输入密码', trigger: 'blur'},
+          {min: 1, max: 20, message: '长度在 1 到 20 个字符', trigger: 'blur'}
+        ],
+      }
     }
   },
   methods: {
-    submitForm() {
-      // 获取用户名和密码
-      var username = this.username;
-      var password = this.password;
-      fetch('http://127.0.0.1:9001/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username: username ,password:password}),
-      })
+    login() {
+      this.$refs['userForm'].validate((valid) => {
+        if (valid) {  // 表单校验合法
+          fetch('http://127.0.0.1:9001/login/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(this.user),
+          })
+              .then(response => response.json())
+              .then(data => {
+                console.log(data)
+                if (data.code === 200){
+                  // this.$router.push({name:'person'});
+                  localStorage.setItem("user", JSON.stringify(data))
+                }else{
+                  alert(data.msg)
+                }
+
+              })
+        }
+      });
     }
   }
 }
 </script>
 
-
-
-<style scoped>
-#login_box {
-  width: 40%;
-  height: 600px;
-  background-color: #00000060;
-  margin: auto;
-  margin-top: 10%;
-  text-align: center;
-  border-radius: 10px;
-  padding: 50px 50px;
-}
-
-h2 {
-  color: #ffffff90;
-  margin-top: 5%;
-}
-
-#input-box {
-  margin-top: 5%;
-}
-
-span {
-  color: #fff;
-}
-
-input {
-  border: 0;
-  width: 60%;
-  font-size: 15px;
-  color: #fff;
-  background: transparent;
-  border-bottom: 2px solid #fff;
-  padding: 5px 10px;
-  outline: none;
-  margin-top: 10px;
-}
-
-button {
-  margin-top: 50px;
-  margin-left: 20px;
-  width: 30%;
-  height: 30px;
-  border-radius: 10px;
-  border: 0;
-  color: #fff;
-  text-align: center;
-  line-height: 30px;
-  font-size: 15px;
-  background-image: linear-gradient(to right, #226c6d, #330867);
-}
-
-#sign_up {
-  margin-top: 45%;
-  margin-left: 60%;
-}
-
-a {
-  margin-top: 50px;
-  margin-left: 20px;
-  width: 30%;
-  height: 30px;
-  border-radius: 10px;
-  border: 0;
-  color: #fff;
-  text-align: center;
-  line-height: 30px;
-  font-size: 15px;
-  background-image: linear-gradient(to right, #226c6d, #330867);
+<style>
+.wrapper {
+  height: 100vh;
+  background-image: linear-gradient(to bottom right, #FC466B, #3F5EFB);
+  overflow: hidden;
 }
 </style>
