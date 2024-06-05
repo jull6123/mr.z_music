@@ -20,74 +20,78 @@ from djangomusic import models
 
 @csrf_exempt
 def login(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
-        print(username, password)
-        try:
-            user = models.sysUser.objects.get(username=username, password=password)
-            userData = user.to_dict()
-            return JsonResponse({'code': 200, 'user': userData, 'msg': ""})
-        except models.sysUser.DoesNotExist:
-            return JsonResponse({'code': 506, 'msg': '不存在，账户或密码错误'})
+    # 传参username+password
+    # 前端实现：user.role=0------admin
+    #         user.role=1------user
+    #         user.role=2------audit
+    data = json.loads(request.body)
+    username = data.get('username')
+    password = data.get('password')
+    print(username, password)
+    user = models.sysUser.objects.filter(username=username, password=password)
+    if user is None or len(user) == 0 or len(user) > 1:
+        return JsonResponse({'code': 501, 'msg': "账号不存在"})
+    elif len(user) > 1:
+        return JsonResponse({'code': 502, 'msg': "查询到多个账号"})
+    else:
+        return JsonResponse({'code': 200, 'msg': "success", 'user': user[0]})
+
 
 @csrf_exempt
 def register(request):
-    username = request.POST.get('username')
-    password = request.POST.get('password')
-    email = request.POST.get('email')
+    # 传参username+password+email
+    # email是否存在 存在则报错，不存在则add_sysUser
+    data = json.loads(request.body)
+    username = data.get('username')
+    password = data.get('password')
+    email = data.get('email')
     print(username, password, email)
-    try:
-        user1 = models.sysUser .objects.filter(email=email).first()
-        if user1 is None:
-            user3 = models.sysUser .objects.create(username=username, password=password)
-            return JsonResponse({'code': 200, 'msg': ""})
-        else:
-            for user2 in user1:
-                print(user2)
-            return JsonResponse({'code': 506, 'mag':'该邮箱已被注册'})
-    except models.sysUser.DoesNotExist:
-        # 用户不存在或密码错误，返回错误信息
-        return JsonResponse({'code': 506, 'msg': '账户或密码错误'})
+    if models.sysUser.objects.filter(email=email) is not None:
+        return JsonResponse({'code': 502, 'msg': "该邮箱已注册"})
+    if models.sysUser.objects.filter(username=username) is not None:
+        return JsonResponse({'code': 502, 'msg': "该用户名已存在"})
+    models.sysUser.objects.create(username=username, password=password, email=email)
+    return JsonResponse({'code': 200, 'msg': "success"})
+
 
 @csrf_exempt
 def updateperson(request):
     data = json.loads(request.body)
-    uid = data.get('id')
+    user = data.get('user')
     if request.method == 'GET':
-        try:
-            user = get_object_or_404(models.sysUser, id=uid)
-            user_data = {
-                'id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'description': user.description,
-                'avatar': user.avatar.url if user.avatar else None,
-                'role': user.get_role_display(),
-                'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
-                'delete_mark': user.get_delete_mark_display(),
-            }
-            return JsonResponse({'code': 200, 'user': user_data, 'msg': ""})
-        except ObjectDoesNotExist:
-            return JsonResponse({'code': 404, 'msg': '用户不存在'})
-
+        user_data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'description': user.description,
+            'avatar': user.avatar.url if user.avatar else None,
+            'role': user.get_role_display(),
+            'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'delete_mark': user.get_delete_mark_display(),
+        }
+        return JsonResponse({'code': 200, 'user': user_data, 'msg': ""})
     elif request.method == 'POST':
-        try:
-            user = models.sysUser.objects.get(id=uid)
-            data = json.loads(request.body)
-            # 更新用户信息
-            user.username = data.get('username', user.username)
-            user.email = data.get('email', user.email)
-            user.description = data.get('description', user.description)
-            # 更新头像
-            if 'avatar' in request.FILES:
-                user.avatar = request.FILES['avatar']
-            # 保存更新后的用户信息
-            user.save()
-            return JsonResponse({'code': 200, 'msg': '用户信息更新成功'})
-        except ObjectDoesNotExist:
-            return JsonResponse({'code': 404, 'msg': '用户不存在'})
+        data = json.loads(request.body)
+        # 更新用户信息
+        user.description = data.get('description', user.description)
+        if user.role is not None:
+            user.role = data.get('role', user.role)
+        # 更新头像
+        if 'avatar' in request.FILES:
+            user.avatar = request.FILES['avatar']
+        # 保存更新后的用户信息
+        user.save()
+        user_data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'description': user.description,
+            'avatar': user.avatar.url if user.avatar else None,
+            'role': user.get_role_display(),
+            'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'delete_mark': user.get_delete_mark_display(),
+        }
+        return JsonResponse({'code': 200, 'user': user_data, 'msg': '用户信息更新成功'})
 
 
 def getTest(request):
