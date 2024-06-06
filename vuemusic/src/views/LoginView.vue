@@ -12,9 +12,8 @@
                     v-model="user.password"></el-input>
         </el-form-item>
         <el-form-item style="margin: 10px 0; text-align: right">
-          <el-button type="primary" size="small" autocomplete="off" @click="login">登录系统</el-button>
-          <el-button type="warning" size="small" autocomplete="off" @click="$router.push('/register')">注册
-          </el-button>
+          <el-button type="primary" size="small" autocomplete="off" @click="login">登 录</el-button>
+          <el-button type="warning" size="small" autocomplete="off" @click="$router.push('/register')">注 册</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -22,10 +21,8 @@
 </template>
 
 <script>
-// import {setRoute, setRoutes} from "../router";
-
 export default {
-  name: "Login",
+  name: "login",
   data() {
     return {
       choose:"",
@@ -55,14 +52,16 @@ export default {
           })
               .then(response => response.json())
               .then(data => {
-                console.log(data)
                 if (data.code === 200){
-                  // this.$router.push({name:'person'});
-                  localStorage.setItem("user", JSON.stringify(data))
-                }else{
-                  alert(data.msg)
+                  localStorage.setItem("user", JSON.stringify(data.user))
+                  if(data.role === 0) this.$router.push('/ahome');
+                  else if(data.role === 1) this.$router.push('/uhome');
+                  else this.$router.push('/ahome');
+                  // this.$router.push({path: "/person", query: {uid: 1}})
                 }
-
+                this.$notify({
+                  title: data.msg
+                });
               })
         }
       });

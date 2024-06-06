@@ -197,7 +197,7 @@ urlpatterns = [
 
     path('serSongList/', admin.serSongList),
     # json 传参serName,serDesc,serUpload,orderBy:duration_time/support/,ascOrder
-    # return userList
+    # return songList
     # 返回所有歌单信息---按钮(getListById/)
 
 ]

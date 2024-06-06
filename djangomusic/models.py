@@ -26,10 +26,10 @@ class sysUser(models.Model):
             'username': self.username,
             'email': self.email,
             'description': self.description,
-            'avatar': self.avatar.url if self.avatar else None,
-            'role': self.get_role_display(),  # 获取选择的角色标签的显示值
+            'avatar': self.avatar.path if self.avatar else None,
+            'role': self.role,
             'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'delete_mark': self.get_delete_mark_display(),  # 获取选择的删除标志的显示值
+            'delete_mark': self.delete_mark,
         }
 
 

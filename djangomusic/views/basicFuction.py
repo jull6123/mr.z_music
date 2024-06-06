@@ -1,25 +1,10 @@
 import json
 import os
 
-from django.shortcuts import get_object_or_404
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from djangomusic import models
 from newdemo import settings
-
-
-# # Create your models here.
-# #  文件上传
-# def user_directory_path(instance, filename):
-#     ext = filename.split('.')[-1]
-#     filename = '{}.{}'.format(uuid.uuid4().hex[:8], ext)
-#     # return the whole path to the file
-#     return "{0}/{1}/{2}".format(instance.user.id, "avatar", filename)
-#
-# class UserProfile(models.Model):
-#     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-#     avatar = models.ImageField(upload_to=user_directory_path, verbose_name="头像")
 
 
 @csrf_exempt
@@ -34,11 +19,22 @@ def login(request):
     print(username, password)
     user = models.sysUser.objects.filter(username=username, password=password)
     if user is None or len(user) == 0 or len(user) > 1:
-        return JsonResponse({'code': 501, 'msg': "账号不存在"})
+        return JsonResponse({'code': 501, 'msg': "账号或密码错误"})
     elif len(user) > 1:
         return JsonResponse({'code': 502, 'msg': "查询到多个账号"})
     else:
-        return JsonResponse({'code': 200, 'msg': "success", 'user': user[0]})
+        user = user[0]
+        user_data = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'description': user.description,
+            'avatar': user.avatar.path if user.avatar else None,
+            'role': user.role,
+            'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'delete_mark': user.delete_mark,
+        }
+        return JsonResponse({'code': 200, 'msg': "success", 'user': user_data})
 
 
 @csrf_exempt
@@ -62,25 +58,73 @@ def register(request):
 def updateperson(request):
     # get 时，user信息由浏览器存储，可直接回显在前端
     if request.method == 'POST':
-        if request.FILES.get('avatar'):
-            user = request.POST.get('user')
-            username = request.POST.get('username')
-            password = request.POST.get('password')
+        uid = request.POST.get('id')
+        user = models.sysUser.objects.filter(id=uid).first()
+        if request.POST.get('type') == 'pwd':
+            if user.password != request.POST.get('oldPassword'):
+                return JsonResponse({'code': 502, 'msg': "原密码填写错误"})
+            else:
+                user.password = request.POST.get('password')
+                user.save()
+                user_data = {
+                    'id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'description': user.description,
+                    'avatar': user.avatar.path if user.avatar else None,
+                    'role': user.role,
+                    'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+                    'delete_mark': user.delete_mark,
+                }
+                return JsonResponse({'code': 200,'user': user_data, 'msg': "修改密码：success"})
+        elif request.POST.get('type') == 'edit':
             description = request.POST['description']
-            avatar = request.FILES['avatar']
+            role = request.POST.get('role')
+            if request.FILES.get('avatar'):
+                avatar = request.FILES['avatar']
+                # Save avatar file
+                avatar_directory = os.path.join(settings.MEDIA_ROOT, 'avatars', uid)
+                print(avatar_directory)
+                if not os.path.exists(avatar_directory):
+                    os.makedirs(avatar_directory)
 
-            # Save avatar file
-            avatar_path = os.path.join(settings.MEDIA_ROOT, 'avatars/' + user.id, avatar.name)
-            with open(avatar_path, 'wb') as f:
-                for chunk in avatar.chunks():
-                    f.write(chunk)
-            if username != user.username:
-                if models.sysUser.objects.filter(username=user.username) is not None:
-                    return JsonResponse({'code': 502, 'msg': "该用户名已存在，请更改"})
+                original_avatar_path = user.avatar.path
+                print(user.avatar)
+                # 删除原始头像文件
+                if os.path.exists(original_avatar_path):
+                    os.remove(original_avatar_path)
+                avatar_path = os.path.join(avatar_directory, avatar.name)
+                with open(avatar_path, 'wb') as f:
+                    for chunk in avatar.chunks():
+                        f.write(chunk)
+                user.avatar = avatar_path
             # Save music info to database
-            user.update(username=username, password=password, description=description, avatar=avatar_path)
-            return JsonResponse({'code': 200, 'user': user, 'msg': "success"})
+            user.description = description
+            user.role = role
+            user.save()
+            user_data = {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'description': user.description,
+                'avatar': user.avatar.path if user.avatar else None,
+                'role': user.role,
+                'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+                'delete_mark': user.delete_mark,
+            }
+            return JsonResponse({'code': 200, 'user': user_data, 'msg': "修改个人信息：success"})
         else:
-            return JsonResponse({'code': 506, 'msg': 'Invalid request or missing files'})
-
+            if user is None:
+                return JsonResponse({'code':501, 'msg': "查找用户不存在"})
+            user_data = {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'description': user.description,
+                'avatar': user.avatar.path if user.avatar else None,
+                'role': user.role,
+                'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+                'delete_mark': user.delete_mark,
+            }
+            return JsonResponse({'code': 200, 'user': user_data, 'msg': "查找用户信息：success"})
 
