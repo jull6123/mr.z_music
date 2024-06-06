@@ -14,8 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from djangomusic import admin
-from djangomusic.views import basicFuction, song, songList, comment, audit
+from djangomusic.views import basicFuction, song, songList, comment, audit, admin
 from django.urls import path
 
 urlpatterns = [
@@ -48,148 +47,158 @@ urlpatterns = [
 
     # 基本功能
     path('login/', basicFuction.login),
-    # 传参username+password
-    # 前端实现：user.role=0------admin
-    #         user.role=1------user
-    #         user.role=2------audit
+    # json 传参username+password
+    # return user
+
     path('register/', basicFuction.register),
-    # 传参username+password+email
-    # email是否存在 存在则报错，不存在则add_sysUser
+    # json 传参username+password+email
 
     # 个人信息与修改密码
     path('updateperson/', basicFuction.updateperson),
-    # 传参user,get/post
+    # 表单
+    # post:传表单填写信息
+    #      return user
 
 
     # 用户端相关功能
     # 歌曲：增删改查+点赞+上传+收藏
+
+    # 我听过的--歌曲列表
     path('listHistoryById/', song.listHistoryById),
-    # 传参user,我听过的，通过user.id在userMusic得到music_id（orderby -listen_time）列表，通过music_id查询musicList
+    # json 传参user
+    # return musicList
 
+    # 清空登录用户的 “我听过的” 数据
+    path('clearHistoryById/', song.clearHistoryById),
+    # json 传参user
+
+    # 全部歌曲搜索：推荐：各榜单 + 搜索
     path('serMusic/', song.serMusic),
-    # 传参type+serName,根据type查询具体的榜单
-    # type = “search" 搜索 根据serMusic搜索sysMusic name/singer serMusic="",则展示全部is_upload=3   【delete_mark=0】
-    # type = "hot" 热歌榜 查询sysMusic support前10  is_upload=3 delete_mark=0 已上传，未删除，网络/Ai音乐（mold=1)时无法上传不用添加条件
-    # type = "new" 新歌榜 查询sysMusic upload_time前30 support前10 is_upload=3 delete_mark=0 已上传，未删除，网络/Ai音乐
-    # type = "ai" AI榜  查询sysMusic is_upload=3 mold=2 delete_mark=0 已上传，Ai
+    # json 传参type：search/hot/new/ai +serName,根据type查询具体的榜单
+    # return musicList
 
+    # 新增歌曲表单填写
     path('song/addMusic/', song.addMusic),
-    # 传参post表单+user+（pid)只有ai生成有       get/post区分 查看/修改
-    # mold = 1 网络音乐，先查看MD5是否重复，若重复直接返回msg="已存在"
-    #                  若不存在，则将post内容写入，add_sysMusic,
-    #                                          add_auditLog, sysMusic:is_upload=1,audit_id=id  return msg="已上传，等待审核"
-    # mold = 2 源音频，先查看MD5是否重复, post内容写入add_sysMusic，is_upload=0,uid=user.id return msg="源音频已上传，等待下一步"
-    # mold = 3 ai音乐，post内容写入add_sysMusic，is_upload=0,pid = pid ,uid=user.id return msg="AI歌曲创建成功，等待下一步"
+    # 表单 传参post表单+user+（pid)只有ai生成有
+    # return music
 
+    # ai生成新歌曲
     path('song/createMusic/', song.createMusic),
-    # 传参源music的id 生成ai
+    # json 传参 源music的id mid
 
+    # 上传歌曲
     path('song/uploadMusic/', song.uploadMusic),
-    # 传参music的id ai有单独的上传按钮，修改sysMusic is_upload为1，add_auditLog，改sysMusic audit_id=id
+    # json 传参music的id mid
 
+    # 删除歌曲 / 自己的该歌单中删除某歌曲
     path('song/delMusic/', song.delMuisc),
-    # 传参music的id 删除音乐，修改sysMusic的delete_mark=1
+    # json 传参music的id mid  songList.id->sid type:delm/dels
 
+    # 点赞歌曲
     path('song/supportMusic/', song.supportMusic),
-    # 传参music的id 点赞音乐，修改sysMusic的 support+1
+    # json 传参music的id mid
 
+    # 收藏歌曲至自己的歌单中
     path('song/collectMusicToList/', song.collectMusicToList),
-    # 传参music的id+songList的id 收藏音乐，新增listMusic数据，修改songList的数量 number+1
+    # json 传参music的id mid  歌单id sid
 
+    # 歌曲添加至 我听过的
     path('song/listenedMusic/', song.listenedMusic),
-    # 传参music的id+user 听过，add_userMusic
+    # json 传参music的id mid + user
 
 
     # 歌单：增删改查+点赞+收藏+上传
+    # 歌单搜索：我的歌单 + 我的收藏 + 热门歌单
     path('serSongList/', songList.serSongList),
-    # 传参type+user+serSongList,根据type查询具体的list
-    # type = “search" 搜索 根据serSongList搜索songList name/desc serSongList="",则展示全部 is_upload=3   【delete_mark=0】
-    # type = “mine" 我的歌单 查询songList uid=user.id delete_mark=0 的songList(不要求是否上传）
-    # type = "collect" 我的收藏 查询listUser user_id=user.id delete_mark=0 的songList.idList，根据id查songList delete_mark=0 收藏的已上传
-    # type = "hot" 热门歌单 查询songList is_upload=3 support前15 delete_mark=0 已上传，未删除
+    # json 传参 type: search/mine/collect/hot + user + serSName,根据type查询具体的list
+    # return songList
 
+    # 新增歌单
     path('songList/addSongList/', songList.addSongList),
-    # 传参user+post内容， add_songList,uid=user.id return msg="创建成功"   get/post区分 查看/修改
+    # 表单
+    # post：user+表单内容
+    # get：歌单id:sid
+    # return songList
 
+    # 上传歌单
     path('songList/uploadSongList/', songList.uploadSongList),
-    # 传参songList的id 上传歌单 is_upload=1,add_auditLog,audit_id=id
+    # json 传参songList.id-> sid
 
+    # 删除歌单/取消收藏
     path('songList/delSongList/', songList.delSongList),
-    # 传参songList的id+user+type 删除歌单 delete_mark=1
-    # type = “mine" 我的歌单 查询songList(id) delete_mark=1
-    # type = "collect" 我的收藏 查询listUser(songList_id+user_id) delete_mark=1
+    # json 传参songList的id->sid + user + type： min/collect
 
+    # 点赞歌单
     path('songList/supportSongList/', songList.supportSongList),
-    # 传参songList的id 点赞歌单 support+1
+    # json 传参songList的id->sid
 
+    # 收藏歌单
     path('songList/collectSongList/', songList.collectSongList),
-    # 传参songList的id+user 收藏歌单 add_listUser
+    # json 传参songList的id->sid + user
 
-    path('songList/delCollectSongList/', songList.delCollectSongList),
-    # 传参songList的id+user 取消收藏 listUser中delete_mark=1
-
+    # 正在播放/歌单查看
     path('getListById/', songList.getListById),
-    # 传参songList的id 正在播放/歌单查看 listMusic根据songList_id delete_mark=0得到music_ids 得到sysMusic的list
+    # json 传参songList的id->sid
+    # return musicList
 
+    # 我听过的 歌单
     # path('listenedList/', music.listenedList),
     # # 传参songList的id+user 听过，add_userMusic
 
     # 评论界面
+    # 搜索评论：热门评论 + 最新评论
     path("getComments", comment.getComments),
-    # 传参type+user,根据type查询具体的list
-    # type = “hot" 热门评论 查询sysComment support前五 delete_mark=0+其user_id对应的用户name,avater
-    # type = “new" 最新评论 查询sysComment create_time前30 delete_mark=0 pid=0 +其user_id对应的用户name,avater
-    #                     循环：根据查询到的id查询pid=id(查询子评论)delete_mark=0 得到commentList +其user_id对应的用户name,avater
-    #                     return ????
+    # json 传参type: hot/new + music.id->mid 根据type查询具体的list
+    # return comment(comment+user.id+user.name+user.avatar
 
+    # 新增评论/回复评论
     path('comment/addComment/', comment.addComment),
-    # 传参sysComment的content+user+music_id+pid(针对子评论）评论回复 add_sysComment
+    # json 传参 content + user + music_id->mid + pid(针对回复时
 
+    # 删除评论
     path('comment/delComment/', comment.delComment),
-    # 传参sysComment的id 删除评论 sysComment:delete_mark=1
+    # json 传参sysComment.id->cid
 
+    # 点赞评论
     path('comment/supportComment', comment.supportComment),
-    # 传参sysComment的id 点赞评论 sysComment:support+1
+    # json 传参sysComment.id->cid
 
 
     # 审核端
+    # 审核数据搜索：待完成/已完成/歌曲/歌单
     path('getAuditList/', audit.getAuditList),
-    # 传参user+type+state delete_mark=0
-    # state = “代办"  查询auditLog audit_state=0
-    # state = “已完成"  查询auditLog audit_id=user.id audit_state>2
-    # type = “music"  查询auditLog audit_mold=0 得到music_id对应的sysMusic name……
-    # type = “songList"  查询auditLog audit_mold=1 得到songList_id对应的songList name……
+    # json 传参user + type:unAudited/Audited + state:music/songList
+    # return auditList:auditLog+ m/s.id + m/s.name + m.url + type(music_net/music_ai/song_list) + m/s.uid.name
 
+    # 审核内容
     path('audit/auditById/', audit.auditById),
-    # 传参user+id+type
-    # type = “music"  根据auditLog的id找到music_id得到sysMusic,展示歌曲内容查看界面
-    # type = “songList" 根据auditLog的id找到songList_id（审核顺序）
-    #                   1. 根据listMusic查询歌单对应的musicList name……  group by is_upload    addSongList/
-    #                   2. 根据songList查询歌单信息name……         addMusic/
+    # json 传参audit.id->aid + music.id->mid + songList.id->id + type:music/songList
+    # return music: music    songList: songList
 
-
+    # 审核结果
     path('audit/auditResult/', audit.auditResult),
-    # 传参user+总id+type+state+content
-    # type = “music"  查询auditLog 总id对应的audit_mold,相同则修改audit_state+msg_content   歌曲审核
-    #                                 不同，若state=false,修改audit_state=3 + msg_content（部分歌曲审核未通过+原content） 歌单审核
-    #                                        state=true,不修改，返回原审核列表界面
-    # type = “songList" 查询auditLog  修改audit_state+msg_content
+    # json 传参 user + auditLog.id->aid + type:music/songList + state:3 fail/4 success + content
+
+    # 查看审核结果
+    path('audit/getauditResult/', audit.getauditResult),
+    # json 传参 user + id + type:music/songList
+    # return audit
+
 
 
     # 管理员端
-    path('userList/', admin.userList),
-    # 返回所有user信息
-    path('musicList/', admin.musicList),
-    # 返回所有歌曲信息
-    path('musicData/', admin.musicData),
-    # 获取或修改歌曲信息
-    path('songList/', admin.songList),
+    path('serUserList/', admin.serUserList),
+    # json 传参serName,serEmail,serDel,serRole
+    # return userList
+
+    path('serMusicList/', admin.serMusicList),
+    # json 传参serName,serDesc,serSinger,serMold,serUpload,orderBy:duration_time/support/,ascOrder
+    # return userList
+
+    path('serSongList/', admin.serSongList),
+    # json 传参serName,serDesc,serUpload,orderBy:duration_time/support/,ascOrder
+    # return userList
     # 返回所有歌单信息---按钮(getListById/)
-    path('songListData/', admin.songListData),
-    # 获取或修改歌单信息
-
-
-
 
 ]
 

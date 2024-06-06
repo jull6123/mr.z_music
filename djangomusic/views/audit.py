@@ -16,7 +16,7 @@ def getAuditList(request):
     type = data.get('type')
     state = data.get('state')
     # 审核记录+审核数据id+name+url+type+所属者
-    if state == "notAudit":
+    if state == "unAudited":
         if type == "music":
             auditList = models.auditLog.objects.filter(audit_state__lte=2, delete_mark=0, audit_mold=0).all()
             for auditM in auditList:
@@ -62,6 +62,7 @@ def auditById(request):
     #                   1. 根据listMusic查询歌单对应的musicList name……  group by is_upload    addSongList/
     #                   2. 根据songList查询歌单信息name……         addMusic/
     data = json.loads(request.body)
+    aid = data.get('aid')
     mid = data.get('mid')
     sid = data.get('sid')
     type = data.get('type')
@@ -72,17 +73,14 @@ def auditById(request):
         return JsonResponse({'code': 200, 'music': music, 'msg': "歌曲不存在"})
     songList = models.songList.objects.filter(id=sid, delete_mark=0).first()
     if songList is None:
-        return JsonResponse({'code': 501, 'msg': "歌曲不存在"})
-    musicList = models.sysMusic.objects.filter(
-        id__in=models.listMusic.objects.filter(songList_id=sid, delete_mark=0).all().id).all()
-    return JsonResponse({'code': 200, 'songList': songList, 'musicList': musicList, 'msg': "success"})
+        return JsonResponse({'code': 501, 'msg': "歌单不存在"})
+    return JsonResponse({'code': 200, 'songList': songList, 'msg': "success"})
 
 
 def auditResult(request):
     # 传参user+总id+type+state+content state:3/4
     # type = “music"  查询auditLog 总id对应的audit_mold,相同则修改audit_state+msg_content   歌曲审核
-    #                                 不同，若state=false,修改audit_state=3 + msg_content（部分歌曲审核未通过+原content） 歌单审核
-    #                                        state=true,不修改，返回原审核列表界面
+    #                                由于歌单添加歌曲时只能添加已上传的歌曲
     # type = “songList" 查询auditLog  修改audit_state+msg_content
     data = json.loads(request.body)
     user = data.get('user')
@@ -97,28 +95,28 @@ def auditResult(request):
         music = models.sysMusic.objects.filter(id=audit.music_id, delete_mark=0).first()
         if music is None:
             return JsonResponse({'code': 501, 'msg': "所审核的音乐已删除"})
-        music.is_upload = state-1
-        music.save()
-        if audit.audit_mold == 0:
-            audit.audit_state = state
-            audit.msg_content = content
-            audit.audit_id = user.id
-            audit.save()
-            return {'code': 200, 'msg': "success"}
-        else:
-            if state == 3:
-                audit.audit_state = state
-                audit.msg_content = "部分歌曲未通过审核"+content
-                audit.audit_id = user.id
-                audit.save()
-                return {'code': 200, 'msg': "success"}
+        music.update(is_upload=state-1)
+        audit.update(audit_state=state, msg_content=content, audit_id=user.id)
+        return {'code': 200, 'msg': "success"}
     songList = models.songList.objects.filter(id=audit.songList_id, delete_mark=0).first()
     if songList is None:
         return JsonResponse({'code': 501, 'msg': "所审核的歌单已删除"})
-    songList.is_upload = state - 1
-    songList.save()
-    audit.audit_state = state
-    audit.msg_content = content
-    audit.audit_id = user.id
-    audit.save()
+    songList.update(is_upload=state-1)
+    audit.update(audit_state=state, msg_content=content, audit_id=user.id)
     return {'code': 200, 'msg': "success"}
+
+
+def getauditResult(request):
+    data = json.loads(request.body)
+    id = data.get('id')
+    type = data.get('type')
+    if type == "music":
+        audit = models.auditLog.objects.filter(music_id=id, delete_mark=0).first()
+        if audit is None:
+            return JsonResponse({'code': 501, 'msg': "审核记录不存在"})
+        return JsonResponse({'code': 200, 'audit': audit, 'msg': "success"})
+    audit = models.auditLog.objects.filter(songList_id=id, delete_mark=0).first()
+    if audit is None:
+        return JsonResponse({'code': 501, 'msg': "审核记录不存在"})
+    return JsonResponse({'code': 200, 'audit': audit, 'msg': "success"})
+    return None

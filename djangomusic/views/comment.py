@@ -24,6 +24,7 @@ def getComments(request):
     for comment in commentList:
         cUser = models.sysUser.objects.filter(id=comment.user_id, delete_mark=0).first()
         if cUser is not None:
+            comment.append(cUser.id)
             comment.append(cUser.name)
             comment.append(cUser.avatar)
     return JsonResponse({'code': 200, 'commentList': commentList, 'msg': "success"})
@@ -50,8 +51,7 @@ def delComment(request):
     comment = models.sysComment.objects.filter(id=cid, delete_mark=0).first()
     if comment is None:
         return JsonResponse({'code': 501, 'msg': "评论不存在"})
-    comment.delete_mark = 1
-    comment.save()
+    comment.update(delete_mark=1)
     return JsonResponse({'code': 200, 'msg': "success"})
 
 

@@ -1,9 +1,13 @@
 import json
+import os
+
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from djangomusic import models
+from newdemo import settings
+
 
 # # Create your models here.
 # #  文件上传
@@ -56,47 +60,27 @@ def register(request):
 
 @csrf_exempt
 def updateperson(request):
-    data = json.loads(request.body)
-    user = data.get('user')
-    if request.method == 'GET':
-        user_data = {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'description': user.description,
-            'avatar': user.avatar.url if user.avatar else None,
-            'role': user.get_role_display(),
-            'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'delete_mark': user.get_delete_mark_display(),
-        }
-        return JsonResponse({'code': 200, 'user': user_data, 'msg': ""})
-    elif request.method == 'POST':
-        data = json.loads(request.body)
-        # 更新用户信息
-        user.description = data.get('description', user.description)
-        if user.role is not None:
-            user.role = data.get('role', user.role)
-        # 更新头像
-        if 'avatar' in request.FILES:
-            user.avatar = request.FILES['avatar']
-        # 保存更新后的用户信息
-        user.save()
-        user_data = {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-            'description': user.description,
-            'avatar': user.avatar.url if user.avatar else None,
-            'role': user.get_role_display(),
-            'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
-            'delete_mark': user.get_delete_mark_display(),
-        }
-        return JsonResponse({'code': 200, 'user': user_data, 'msg': '用户信息更新成功'})
+    # get 时，user信息由浏览器存储，可直接回显在前端
+    if request.method == 'POST':
+        if request.FILES.get('avatar'):
+            user = request.POST.get('user')
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            description = request.POST['description']
+            avatar = request.FILES['avatar']
+
+            # Save avatar file
+            avatar_path = os.path.join(settings.MEDIA_ROOT, 'avatars/' + user.id, avatar.name)
+            with open(avatar_path, 'wb') as f:
+                for chunk in avatar.chunks():
+                    f.write(chunk)
+            if username != user.username:
+                if models.sysUser.objects.filter(username=user.username) is not None:
+                    return JsonResponse({'code': 502, 'msg': "该用户名已存在，请更改"})
+            # Save music info to database
+            user.update(username=username, password=password, description=description, avatar=avatar_path)
+            return JsonResponse({'code': 200, 'user': user, 'msg': "success"})
+        else:
+            return JsonResponse({'code': 506, 'msg': 'Invalid request or missing files'})
 
 
-def getTest(request):
-    user = request.GET.get('user')
-    print(user)
-    music_list = models.sysUser.objects.get(id=user).music.all()
-    print(music_list)
-    return JsonResponse({'code': 200, 'music_list': music_list})

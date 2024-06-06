@@ -1,13 +1,15 @@
 import json
+import os
 
 from django.http import JsonResponse
 
 from djangomusic import models
+from newdemo import settings
 
 
 def serSongList(request):
-    # 传参type+user+serSongList,根据type查询具体的list
-    # type = “search" 搜索 根据serSongList搜索songList name/desc serSongList="",则展示全部 is_upload=3   【delete_mark=0】
+    # 传参type+user+serSName,根据type查询具体的list
+    # type = “search" 搜索 根据serSName搜索songList name/desc serSName="",则展示全部 is_upload=3   【delete_mark=0】
     # type = “mine" 我的歌单 查询songList uid=user.id delete_mark=0 的songList(不要求是否上传）
     # type = "collect" 我的收藏 查询listUser user_id=user.id delete_mark=0 的songList.idList，根据id查songList delete_mark=0 收藏的已上传
     # type = "hot" 热门歌单 查询songList is_upload=3 support前15 delete_mark=0 已上传，未删除
@@ -31,7 +33,41 @@ def serSongList(request):
 
 
 def addSongList(request):
-    return None
+    # 传参user+post内容， add_songList,uid=user.id return msg="创建成功"   get/post区分 查看/修改
+    if request.method == 'POST':
+        if request.FILES.get('avatar'):
+            user = request.POST.get('user')
+            sid = request.POST.get('sid')
+            name = request.POST.get('name')
+            description = request.POST.get('description')
+            avatar = request.FILES['avatar']
+
+            # Save avatar file
+            avatar_path = os.path.join(settings.MEDIA_ROOT, 'avatars/'+user.id, avatar.name)
+            with open(avatar_path, 'wb') as f:
+                for chunk in avatar.chunks():
+                    f.write(chunk)
+            if sid is not None:
+                # Update music info to database
+                songL = models.songList.objects.filter(id=sid, delete_mark=0).first()
+                if songL is None:
+                    return JsonResponse({'code': 501, 'msg': "该歌单不存在"})
+                songL.update(name=name, description=description, avatar=avatar_path)
+            # Save music info to database
+            songL = models.songList.objects.create(
+                name=name,
+                description=description,
+                avatar=avatar_path,
+            )
+            return JsonResponse({'code': 200, 'songList': songL, 'msg': "success"})
+        else:
+            return JsonResponse({'code': 506, 'msg': 'Invalid request or missing files'})
+    if request.method == 'GET':
+        sid = request.GET.get('sid')
+        songL = models.songList.objects.filter(id=sid, delete_mark=0).first()
+        if songL is None:
+            return JsonResponse({'code': 501, 'msg': "该歌单不存在"})
+        return JsonResponse({'code': 200, 'songList': songL, 'msg': "success"})
 
 
 def uploadSongList(request):
@@ -41,10 +77,8 @@ def uploadSongList(request):
     songList = models.songList.objects.filter(id=sid, delete_mark=0).first()
     if songList is None:
         return JsonResponse({'code': 501, 'msg': "歌单不存在"})
-    songList.is_upload = 1
     audit = models.auditLog.objects.create(user_id=request.user.id, audit_mold=1)
-    songList.audit_id = audit.id
-    songList.save()
+    songList.update(is_upload=1, audit_id=audit.id)
     return JsonResponse({'code': 200, 'msg': "success"})
 
 
@@ -60,16 +94,13 @@ def delSongList(request):
         songList = models.songList.objects.filter(id=sid, delete_mark=0).first()
         if songList is None:
             return JsonResponse({'code': 501, 'msg': "歌单不存在"})
-        songList.delete_mark = 1
-        songList.save()
+        songList.update(delete_mark=1)
         return JsonResponse({'code': 200, 'msg': "success"})
-    else:
-        songListUser = models.listUser.objects.filter(user_id=user.id, songList_id=sid, delete_mark=0).first()
-        if songListUser is None:
-            return JsonResponse({'code': 501, 'msg': "该收藏歌单不存在"})
-        songListUser.delete_mark = 1
-        songListUser.save()
-        return JsonResponse({'code': 200, 'msg': "success"})
+    songListUser = models.listUser.objects.filter(user_id=user.id, songList_id=sid, delete_mark=0).first()
+    if songListUser is None:
+        return JsonResponse({'code': 501, 'msg': "该收藏歌单不存在"})
+    songListUser.update(delete_mark=1)
+    return JsonResponse({'code': 200, 'msg': "success"})
 
 
 def supportSongList(request):
@@ -90,19 +121,6 @@ def collectSongList(request):
     sid = data.get('sid')
     user = data.get('user')
     models.listUser.objects.create(user_id=user.id, songList_id=sid)
-    return JsonResponse({'code': 200, 'msg': "success"})
-
-
-def delCollectSongList(request):
-    # 传参songList的id+user 取消收藏 listUser中delete_mark=1
-    data = json.loads(request.body)
-    sid = data.get('sid')
-    user = data.get('user')
-    lU = models.listUser.objects.filter(user_id=user.id, songList_id=sid).first()
-    if lU is None:
-        return JsonResponse({'code': 501, 'msg': "该收藏歌单数据不存在"})
-    lU.delete_mark = 1
-    lU.save()
     return JsonResponse({'code': 200, 'msg': "success"})
 
 
