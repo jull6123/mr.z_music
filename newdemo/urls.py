@@ -18,46 +18,11 @@ from djangomusic.views import basicFuction, song, songList, comment, audit, admi
 from django.urls import path
 
 urlpatterns = [
-    # path("admin/", admin.site.urls),
-    # path('login/', hviews.login),
-    # path('register/', hviews.register),
-    # path("person/", hviews.person),
-    # path("update/", hviews.update),
-    #
-    # path("home/", hviews.home),
-    #
-    # # 管理员界面对用户的增删改查
-    # path("user/<int:uid>/search/", user.search),
-    # path("user/list/", user.userList),
-    # path("user/add/", user.userAdd),
-    # path("user/delete/", user.userDelete),
-    # path("user/<int:nid>/edit/", user.userEdit),
-    #
-    # path("music/down/", music.down),
-    # path("music/change/", music.change),
-    # path("music/theList/", music.theList),
-    # path("music/<int:uid>/search/", music.search),
-    # path("music/list/", music.musicList),
-    # path("music/add/", music.musicAdd),
-    # path("music/delete/", music.musicDelete),
-    # path("music/<int:nid>/edit/", music.musicEdit),
-    #
-    # path("test/", home.app),
-
 
     # 基本功能
     path('login/', basicFuction.login),
-    # json 传参username+password
-    # return user
-
     path('register/', basicFuction.register),
-    # json 传参username+password+email
-
-    # 个人信息与修改密码
     path('updateperson/', basicFuction.updateperson),
-    # 表单
-    # post:传表单填写信息
-    #      return user
 
 
     # 用户端相关功能
@@ -90,13 +55,13 @@ urlpatterns = [
     path('song/uploadMusic/', song.uploadMusic),
     # json 传参music的id mid
 
-    # 删除歌曲 / 自己的该歌单中删除某歌曲
-    path('song/delMusic/', song.delMuisc),
-    # json 传参music的id mid  songList.id->sid type:delm/dels
+    # # 删除歌曲 / 自己的该歌单中删除某歌曲
+    # path('song/delMusic/', song.delMuisc),
+    # # json 传参music的id mid  songList.id->sid type:delm/dels
 
-    # 点赞歌曲
-    path('song/supportMusic/', song.supportMusic),
-    # json 传参music的id mid
+    # # 点赞歌曲
+    # path('song/supportMusic/', song.supportMusic),
+    # # json 传参music的id mid
 
     # 收藏歌曲至自己的歌单中
     path('song/collectMusicToList/', song.collectMusicToList),
@@ -124,13 +89,13 @@ urlpatterns = [
     path('songList/uploadSongList/', songList.uploadSongList),
     # json 传参songList.id-> sid
 
-    # 删除歌单/取消收藏
-    path('songList/delSongList/', songList.delSongList),
-    # json 传参songList的id->sid + user + type： min/collect
+    # # 删除歌单/取消收藏
+    # path('songList/delSongList/', songList.delSongList),
+    # # json 传参songList的id->sid + user + type： min/collect
 
-    # 点赞歌单
-    path('songList/supportSongList/', songList.supportSongList),
-    # json 传参songList的id->sid
+    # # 点赞歌单
+    # path('songList/supportSongList/', songList.supportSongList),
+    # # json 传参songList的id->sid
 
     # 收藏歌单
     path('songList/collectSongList/', songList.collectSongList),
@@ -155,50 +120,26 @@ urlpatterns = [
     path('comment/addComment/', comment.addComment),
     # json 传参 content + user + music_id->mid + pid(针对回复时
 
-    # 删除评论
-    path('comment/delComment/', comment.delComment),
-    # json 传参sysComment.id->cid
+    # # 删除评论
+    # path('comment/delComment/', comment.delComment),
+    # # json 传参sysComment.id->cid
 
-    # 点赞评论
-    path('comment/supportComment', comment.supportComment),
-    # json 传参sysComment.id->cid
+    # # 点赞评论
+    # path('comment/supportComment', comment.supportComment),
+    # # json 传参sysComment.id->cid
 
 
     # 审核端
-    # 审核数据搜索：待完成/已完成/歌曲/歌单
     path('getAuditList/', audit.getAuditList),
-    # json 传参user + type:unAudited/Audited + state:music/songList
-    # return auditList:auditLog+ m/s.id + m/s.name + m.url + type(music_net/music_ai/song_list) + m/s.uid.name
-
-    # 审核内容
     path('audit/auditById/', audit.auditById),
-    # json 传参audit.id->aid + music.id->mid + songList.id->id + type:music/songList
-    # return music: music    songList: songList
-
-    # 审核结果
     path('audit/auditResult/', audit.auditResult),
-    # json 传参 user + auditLog.id->aid + type:music/songList + state:3 fail/4 success + content
-
-    # 查看审核结果
-    path('audit/getauditResult/', audit.getauditResult),
-    # json 传参 user + id + type:music/songList
-    # return audit
-
-
 
     # 管理员端
     path('serUserList/', admin.serUserList),
-    # json 传参serName,serEmail,serDel,serRole
-    # return userList
-
+    path('delById/', admin.delById),
+    path('supportById/', admin.supportById),
     path('serMusicList/', admin.serMusicList),
-    # json 传参serName,serDesc,serSinger,serMold,serUpload,orderBy:duration_time/support/,ascOrder
-    # return userList
-
-    path('serSongList/', admin.serSongList),
-    # json 传参serName,serDesc,serUpload,orderBy:duration_time/support/,ascOrder
-    # return songList
-    # 返回所有歌单信息---按钮(getListById/)
+    path('serSongLists/', admin.serSongLists),
 
 ]
 

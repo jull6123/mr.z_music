@@ -5,6 +5,7 @@ from datetime import timezone
 
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from djangomusic import models
 from newdemo import settings
@@ -13,8 +14,8 @@ from newdemo import settings
 def listHistoryById(request):
     # 传参user,我听过的，通过user.id在userMusic得到music_id（orderby -listen_time）列表，通过music_id查询musicList
     data = json.loads(request.body)
-    user = data.get('user')
-    uMusics = models.userMusic.objects.filter(user_id=user.id).order_by('-listen_time').all()[:30]
+    userId = data.get('userId')
+    uMusics = models.userMusic.objects.filter(user_id=userId).order_by('-listen_time').all()[:30]
     musicList = []
     for uMusic in uMusics:
         musicList.append(models.sysMusic.objects.filter(id=uMusic.id).first())
@@ -24,8 +25,8 @@ def listHistoryById(request):
 def clearHistoryById(request):
     # 传参user,清空我听过的，通过user.id在userMusic删除
     data = json.loads(request.body)
-    user = data.get('user')
-    models.userMusic.objects.filter(user_id=user.id).all().delete()
+    userId = data.get('userId')
+    models.userMusic.objects.filter(user_id=userId).all().delete()
     return JsonResponse({'code': 200, 'msg': "success"})
 
 
@@ -50,6 +51,7 @@ def serMusic(request):
         musicList = models.sysMusic.objects.filter(is_upload=3, mold=2, delete_mark=0).order_by('-upload_time').all()[:5]
     return JsonResponse({'code': 200, 'musicList': musicList, 'msg': "success"})
 
+@csrf_exempt
 def addMusic(request):
     # 传参post表单+user+（pid)只有ai生成有       get/post区分 查看/修改
     # mold = 1 网络音乐，先查看MD5是否重复，若重复直接返回msg="已存在"
@@ -59,23 +61,14 @@ def addMusic(request):
     # mold = 3 ai音乐，post内容写入add_sysMusic，is_upload=0,pid = pid ,uid=user.id return msg="AI歌曲创建成功，等待下一步"
     # 表单提交
     if request.method == 'POST':
-        if request.FILES.get('avatar') and request.FILES.get('musicFile'):
-            user = request.POST.get('user')
-            name = request.POST.get('name')
-            singer = request.POST.get('singer')
-            description = request.POST['description']
-            avatar = request.FILES['avatar']
-            duration = request.POST.get('duration')
-            mold = request.POST['mold']
-            pid = request.POST.get('pid')
-            music_file = request.FILES['musicFile']
-
+        # 第一步：上传音乐
+        if request.POST.get('type') == 'music':
+            music_file = request.FILES.get('musicFile')
             # Calculate MD5 hash of the music file
             music_hasher = hashlib.md5()
             for chunk in music_file.chunks():
                 music_hasher.update(chunk)
             music_md5_hash = music_hasher.hexdigest()
-
             obj = models.sysMusic.objects.filter(MD5=music_md5_hash).first()
             # 已存在该文件
             if obj is not None:
@@ -84,47 +77,104 @@ def addMusic(request):
                     obj.update(is_delete=0)
                 return JsonResponse({'code': 502, 'msg': "该音乐已存在，不必上传"})
             # Save music file
-            music_file_path = os.path.join(settings.MEDIA_ROOT, 'music', music_md5_hash + '.mp3')
-            with open(music_file_path, 'wb') as f:
+            music_file_path = os.path.join(settings.MEDIA_ROOT, 'music')
+            if not os.path.exists(music_file_path):
+                os.makedirs(music_file_path)
+
+            music_path = os.path.join(music_file_path, music_md5_hash + '.mp3')
+            with open(music_path, 'wb') as f:
                 for chunk in music_file.chunks():
                     f.write(chunk)
-            # Save avatar file
-            avatar_path = os.path.join(settings.MEDIA_ROOT, 'avatars/'+user.id, avatar.name)
-            with open(avatar_path, 'wb') as f:
-                for chunk in avatar.chunks():
-                    f.write(chunk)
+
             # Generate URL for music
             url = request.build_absolute_uri(settings.MEDIA_URL + 'music/' + music_md5_hash + '.mp3')
             # Save music info to database
             music = models.sysMusic.objects.create(
-                name=name,
-                singer=singer,
-                description=description,
-                avatar=avatar_path,
-                duration_time=duration,
-                mold=mold,
+                duration_time='00:00',
                 MD5=music_md5_hash,
                 url=url
             )
-            if mold == 1:
-                audit = models.auditLog.objects.create(music_id=music.id)
-                music.update(audit_id=audit.id)
+            return JsonResponse({'code': 200, 'mid': music.id, 'msg': "等待进一步补充信息"})
+        # 第二步：补充信息
+        elif request.POST.get('type') == 'post':
+            userId = request.POST.get('userId')
+            mid = request.POST.get('mid')
+            name = request.POST.get('name')
+            singer = request.POST.get('singer')
+            description = request.POST.get('description')
+            duration = request.POST.get('duration')
+            mold = request.POST.get('mold')
+            pid = request.POST.get('pid')
+            music = models.sysMusic.objects.filter(id=mid).first()
+
+            if request.FILES.get('avatar'):
+                avatar = request.FILES.get('avatar')
+                avatar_directory = os.path.join(settings.MEDIA_ROOT, 'avatars/music', mid)
+                if not os.path.exists(avatar_directory):
+                    os.makedirs(avatar_directory)
+                original_avatar_path = music.avatar.path
+                # 删除原始头像文件
+                if os.path.exists(original_avatar_path):
+                    os.remove(original_avatar_path)
+                avatar_path = os.path.join(avatar_directory, avatar.name)
+                with open(avatar_path, 'wb') as f:
+                    for chunk in avatar.chunks():
+                        f.write(chunk)
+                music.avatar = 'avatars/music/{}/{}'.format(mid, avatar.name)
+
+            # Save music info to database
+            music.name = name
+            music.singer = singer
+            music.description = description
+            music.duration_time = duration
+            music.mold = int(mold)
+            if mold == '1':
+                # 已有审核数据
+                if music.is_upload == 1 and music.audit_id != 0:
+                    return JsonResponse({'code': 504, 'msg': "正在审核中，不可修改"})
+                audit = models.auditLog.objects.create(music_id=mid)
+                music.audit_id = audit.id
                 msg = "已上传，等待审核"
-            elif mold == 2:
-                music.update(is_upload=0, uid=user.id)
+            elif mold == '2':
+                music.is_upload = 0
+                music.uid = userId
                 msg = "源音频已上传，等待下一步"
-            elif mold == 3:
-                music.update(is_upload=0, uid=user.id, pid=pid)
+            elif mold == '3':
+                music.is_upload = 0
+                music.uid = userId
+                music.pid = pid
                 msg = "AI歌曲创建成功，等待下一步"
-            return JsonResponse({'code': 200, 'music': music, 'msg': msg})
-        else:
-            return JsonResponse({'code': 506, 'msg': 'Invalid request or missing files'})
-    if request.method == 'GET':
-        mid = request.GET.get('mid')
-        music = models.sysMusic.objects.filter(id=mid, delete_mark=0).first()
-        if music is None:
-            return JsonResponse({'code': 501, 'msg': "该歌曲文件不存在"})
-        return JsonResponse({'code': 200, 'music': music, 'msg': "success"})
+            else:
+                return JsonResponse({'code': 504, 'msg': "mold错误"})
+            music.save()
+            return JsonResponse({'code': 200, 'mid': music.id, 'msg': msg})
+        elif request.POST.get('type') == 'get':
+            mid = request.POST.get('mid')
+            music = models.sysMusic.objects.filter(id=mid, delete_mark=0).first()
+            if music is None:
+                return JsonResponse({'code': 501, 'msg': "该歌曲文件不存在"})
+            audit = models.auditLog.objects.filter(id=music.audit_id).first()
+            auditResult = audit.get_audit_state_display()
+            auditContent = audit.msg_content
+            music_data = {
+                'id': music.id,
+                'name': music.name,
+                'singer': music.singer,
+                'avatar': music.get_avatar_url() if music.avatar else None,
+                'duration': music.duration_time.strftime('%H:%M:%S'),
+                'description': music.description,
+                'support': music.support,
+                'mold': music.get_mold_display(),
+                'url': music.url,
+                'is_upload': music.is_upload,
+                'audit_id': music.audit_id,
+                'pid': music.pid,
+                'uid': music.uid,
+                'auditResult': auditResult,
+                'auditContent': auditContent,
+            }
+            return JsonResponse({'code': 200, 'music': music_data, 'msg': "success"})
+
 
 def createMusic(request):
     # 传参源music的id 生成ai
@@ -191,10 +241,10 @@ def listenedMusic(request):
     # 传参music的id+user 听过，add_userMusic或修改听歌时间
     data = json.loads(request.body)
     mid = data.get('mid')
-    user = data.get('user')
-    uMusic = models.userMusic.objects.filter(user_id=user.id, music_id=mid)
+    userId = data.get('userId')
+    uMusic = models.userMusic.objects.filter(user_id=userId, music_id=mid)
     if uMusic is None:
-        models.userMusic.objects.create(user_id=user.id, music_id=mid)
+        models.userMusic.objects.create(user_id=userId, music_id=mid)
     else:
         uMusic[0].update(listen_time=timezone.now().timestamp())
 

@@ -23,7 +23,7 @@
         </el-form-item>
         <el-form-item style="margin: 10px 0; text-align: right">
           <el-button type="primary" size="small" autocomplete="off" @click="register">注 册</el-button>
-          <el-button type="warning" size="small" autocomplete="off" @click="$router.push('/login')">返回登陆</el-button>
+          <el-button type="warning" size="small" autocomplete="off" @click="$router.push('/')">返回登陆</el-button>
         </el-form-item>
       </el-form>
     </div>
