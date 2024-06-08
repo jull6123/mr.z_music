@@ -1,5 +1,5 @@
 <template>
-  <el-card style="width: 500px;">
+  <el-card style="width: 500px;margin-left: 550px;margin-top: 175px;">
     <img v-if="form.avatar && !showPasswordFormItem" :src="form.avatarUrl" alt="Avatar" style="max-width: 200px;">
     <input type="file" v-if="!showPasswordFormItem" @change="handleFileChange">
 
