@@ -2,9 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HelpView from '../views/HelpView.vue'
 import PlayingView from '../views/PlayingView.vue'
 import AiView from '@/views/AiView.vue'
-import personView from "@/views/personView.vue";
-import LoginView from "@/views/LoginView.vue";
-import registerView from "@/views/registerView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -25,19 +22,39 @@ const router = createRouter({
       component:AiView
     },
     {
-      path: '/login',
+      path: '/',
       name: 'login',
-      component: LoginView
+      component: () => import('../views/LoginView.vue')
     },
     {
       path: '/register',
       name: 'register',
-      component: registerView
+      component: () => import('../views/registerView.vue')
     },
     {
       path: '/person',
       name: 'person',
-      component: personView
+      component: () => import('../views/personView.vue')
+    },
+    {
+      path: '/auditHome',
+      name: 'auditHome',
+      component: () => import('../views/auditHomeView.vue')
+    },
+    {
+      path: '/adminHome',
+      name: 'adminHome',
+      component: () => import('../views/adminHomeView.vue')
+    },
+    {
+      path: '/home',
+      name: 'home',
+      component: () => import('../views/userHomeView.vue')
+    },
+    {
+      path: '/uploadPost',
+      name: 'uploadPost',
+      component: () => import('../views/uploadView.vue')
     },
   ]
 })

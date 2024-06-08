@@ -29,7 +29,7 @@ def login(request):
             'username': user.username,
             'email': user.email,
             'description': user.description,
-            'avatar': user.avatar.path if user.avatar else None,
+            'avatar': user.get_avatar_url() if user.avatar else None,
             'role': user.role,
             'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
             'delete_mark': user.delete_mark,
@@ -71,19 +71,19 @@ def updateperson(request):
                     'username': user.username,
                     'email': user.email,
                     'description': user.description,
-                    'avatar': user.avatar.path if user.avatar else None,
+                    'avatar': user.get_avatar_url() if user.avatar else None,
                     'role': user.role,
                     'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
                     'delete_mark': user.delete_mark,
                 }
-                return JsonResponse({'code': 200,'user': user_data, 'msg': "修改密码：success"})
+                return JsonResponse({'code': 200, 'user': user_data, 'msg': "修改密码：success"})
         elif request.POST.get('type') == 'edit':
-            description = request.POST['description']
+            description = request.POST.get('description')
             role = request.POST.get('role')
             if request.FILES.get('avatar'):
                 avatar = request.FILES['avatar']
                 # Save avatar file
-                avatar_directory = os.path.join(settings.MEDIA_ROOT, 'avatars', uid)
+                avatar_directory = os.path.join(settings.MEDIA_ROOT, 'avatars/user', uid)
                 print(avatar_directory)
                 if not os.path.exists(avatar_directory):
                     os.makedirs(avatar_directory)
@@ -97,17 +97,18 @@ def updateperson(request):
                 with open(avatar_path, 'wb') as f:
                     for chunk in avatar.chunks():
                         f.write(chunk)
-                user.avatar = avatar_path
+                user.avatar = 'avatars/{}/{}'.format(uid, avatar.name)
+
             # Save music info to database
             user.description = description
-            user.role = role
+            user.role = int(role)
             user.save()
             user_data = {
                 'id': user.id,
                 'username': user.username,
                 'email': user.email,
                 'description': user.description,
-                'avatar': user.avatar.path if user.avatar else None,
+                'avatar': user.get_avatar_url() if user.avatar else None,
                 'role': user.role,
                 'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
                 'delete_mark': user.delete_mark,
@@ -115,13 +116,13 @@ def updateperson(request):
             return JsonResponse({'code': 200, 'user': user_data, 'msg': "修改个人信息：success"})
         else:
             if user is None:
-                return JsonResponse({'code':501, 'msg': "查找用户不存在"})
+                return JsonResponse({'code': 501, 'msg': "查找用户不存在"})
             user_data = {
                 'id': user.id,
                 'username': user.username,
                 'email': user.email,
                 'description': user.description,
-                'avatar': user.avatar.path if user.avatar else None,
+                'avatar': user.get_avatar_url() if user.avatar else None,
                 'role': user.role,
                 'create_time': user.create_time.strftime('%Y-%m-%d %H:%M:%S'),
                 'delete_mark': user.delete_mark,
