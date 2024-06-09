@@ -135,21 +135,23 @@
                 <div slot="header" class="clearfix">
                   <h3 style="text-align: center">{{ songListNow.name }}</h3>
                 </div>
-                <div v-for="(value, key) in songListNow" :key="key" class="text item">
-                  <template v-if="key !== 'id' && key !== 'avatar' && key !== 'uid'">
+                <div v-for="(value, key) in songListNow" :key="key" class="text item" style="text-align: center; margin-top: 5px">
+                  <template v-if="key !== 'id' && key !== 'avatar' && key !== 'is_upload'
+                          && key !== 'uid' && key !== 'audit_id' && key !== 'name'">
                     {{ customKeys[key] }}:{{ value }}
                   </template>
                 </div>
-                <div style="padding-top: 30px;">
-                  <el-button type="primary" @click="like(songListNow,'songList')"> 点 赞 </el-button>
-                  <el-button type="primary" @click="collect(songListNow)"> 收 藏 </el-button>
+                <div style="padding-top: 30px; text-align: right;" >
+                  <el-button type="primary" v-if="songListNow.uid !== user.id" @click="like(songListNow,'songList')"> 点 赞 </el-button>
+                  <el-button type="primary" v-if="songListNow.uid !== user.id" @click="collect(songListNow)"> 收 藏 </el-button>
+                  <el-button type="primary" v-if="songListNow.uid === user.id" @click="uploadSongList(songListNow)"> 上 传 </el-button>
                 </div>
               </el-card>
 <!--              歌单的歌曲列表-->
               <el-table :data="songMusicList" border stripe :header-cell-class-name="'headerBg'"
                         style="margin-top: 30px">
                 <el-table-column prop="name" label="歌曲名" width="140"></el-table-column>
-                <el-table-column prop="si nger" label="歌手"></el-table-column>
+                <el-table-column prop="singer" label="歌手"></el-table-column>
                 <el-table-column prop="support" label="点赞数"></el-table-column>
                 <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>
                 <el-table-column label="操作" width="500" align="center">
@@ -157,7 +159,7 @@
                     <el-button type="primary" @click="display(scope.row)"> 播 放 </el-button>
                     <el-button type="primary" @click="like(scope.row, 'music')"> 点 赞 </el-button>
                     <el-button type="success" @click="comment(scope.row)"> 评 论 </el-button>
-                    <el-button type="success" @click="add(scope.row)"> 添加至 我的歌单 </el-button>
+                    <el-button type="success" v-if="user.id !== songListNow.uid " @click="add(scope.row)"> 添加至 我的歌单 </el-button>
                     <el-button type="success" v-if="user.id === songListNow.uid && songListNow.is_upload === 0" @click="delMusic(scope.row)"> 删 除 </el-button>
                   </template>
                 </el-table-column>
@@ -181,13 +183,15 @@
                   <el-table-column prop="name" label="名称" width="140"></el-table-column>
                   <el-table-column prop="number" label="歌曲数量"></el-table-column>
                   <el-table-column prop="support" label="点赞数"></el-table-column>
-                  <el-table-column prop="is_upload_msg" label="上传阶段"></el-table-column>
+                  <el-table-column v-if="is_upload === 0" prop="is_upload_msg" label="上传阶段"></el-table-column>
+                  <el-table-column v-if="is_upload > 1" prop="auditContent" label="审核结果"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
                       <el-button type="primary" @click="getSongMusic(scope.row)"> 播放并查看 </el-button>
-                      <el-button type="primary" @click="updateSongList(scope.row)"> 修 改 </el-button>
+                      <el-button type="primary" v-if="scope.row.is_upload === 1" @click="press"> 催 办 </el-button>
+                      <el-button type="primary" v-if="scope.row.is_upload === 0" @click="updateSongList(scope.row)"> 修 改 </el-button>
                       <el-button type="primary" v-if="scope.row.is_upload === 0" @click="uploadSongList(scope.row)"> 上 传 </el-button>
-                      <el-button type="primary" @click="delSongList(scope.row)"> 删 除 </el-button>
+                      <el-button type="primary" v-if="scope.row.is_upload === 0" @click="delSongList(scope.row)"> 删 除 </el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -379,8 +383,9 @@
                       <el-table-column label="操作" width="500" align="center">
                         <template #default="scope">
                           <el-button type="primary" v-if="scope.row.is_upload === 0 " @click="addTo(scope.row.id)"> 添 加 </el-button>
-                          <el-button type="primary" @click="updateSongList(scope.row)"> 查看 </el-button>
-                          <el-button type="primary" v-if="scope.row.user_id === 0 " @click="uploadSongList(scope.row)"> 上 传 </el-button>
+                          <el-button type="primary" v-if="scope.row.is_upload !== 0 " @click="updateSongList(scope.row)"> 查 看 </el-button>
+                          <el-button type="primary" v-if="scope.row.is_upload === 0 " @click="updateSongList(scope.row)"> 修 改 </el-button>
+                          <el-button type="primary" v-if="scope.row.is_upload === 0 " @click="uploadSongList(scope.row)"> 上 传 </el-button>
                         </template>
                       </el-table-column>
                     </el-table>
@@ -389,7 +394,7 @@
               </el-card>
               <template #footer>
                 <div class="dialog-footer">
-                  <el-button type="primary" @click="openAddSongList()"> 新 增 歌 单 </el-button>
+                  <el-button type="primary" @click="openAddSongList"> 新 增 歌 单 </el-button>
                   <el-button type="success" @click="dialogVisibleToList = false"> back </el-button>
                 </div>
               </template>
@@ -450,6 +455,10 @@ export default {
         email: '邮箱',
         create_time: '创建时间',
         content: '审核结果',
+        number: '歌曲数量',
+        support: '点赞数量',
+        is_upload_msg: '上传阶段',
+        auditContent: '审核结果',
       },
       // 正在播放的歌单的歌曲列表
       songMusicList:[],
@@ -558,8 +567,11 @@ export default {
       this.getType = 'ai'
     },
     load(){
-    //   数据初始化
-    //   搜索的热门歌单名
+      this.getHotMusics()
+      this.getsongListCollectAndMine()
+    },
+    getHotMusics(){
+      //   搜索的热门歌单名
       const data = {
         type:'hot',
         serName:'',
@@ -571,20 +583,22 @@ export default {
         },
         body: JSON.stringify(data),
       })
-          .then(response => response.json())
-          .then(data => {
-            if (data.code === 200){
-              this.hotMusic  = data.musicList
-            }
-            this.$notify({
-              title: data.msg
-            });
-          })
-
+        .then(response => response.json())
+        .then(data => {
+          if (data.code === 200){
+            this.hotMusic  = data.musicList
+          }
+          this.$notify({
+            title: data.msg
+          });
+        })
+    },
+    getsongListCollectAndMine(){
       // 添加至 我的歌单 弹窗
       const data2 = {
         type:'get',
-        serSName:this.searchData.serSName,
+        userId: this.user.id,
+        serSName: this.searchData.serSName,
       }
       fetch('http://127.0.0.1:9001/serSongList/', {
         method: 'POST',
@@ -593,17 +607,16 @@ export default {
         },
         body: JSON.stringify(data2),
       })
-          .then(response => response.json())
-          .then(data => {
-            if (data.code === 200){
-              this.songListMine  = data.listMine
-              this.songListCollect = data.listCollect
-            }
-            this.$notify({
-              title: data.msg
-            });
-          })
-
+        .then(response => response.json())
+        .then(data => {
+          if (data.code === 200){
+            this.songListMine  = data.listMine
+            this.songListCollect = data.listCollect
+          }
+          this.$notify({
+            title: data.msg
+          });
+        })
     },
     handleMusicNameClick(id){
     //   点击歌曲name 播放歌曲
@@ -649,9 +662,68 @@ export default {
     },
     getSongMusic(row){
     //   歌单的点击播放并查看
+      this.getType = 'songMusic'
+      this.getsongListFrom(row.id)
+      this.getsongMusicList(row.id)
+    },
+    getsongListFrom(id){
+      const data={
+        sid: id,
+      }
+      fetch('http://127.0.0.1:9001/getFormById/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+          .then(response => response.json())
+          .then(data => {
+            if (data.code === 200){
+              this.songListNow = data.songList
+            }
+          })
+    },
+    getsongMusicList(id){
+      const data={
+        sid: id,
+      }
+      fetch('http://127.0.0.1:9001/getListById/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+          .then(response => response.json())
+          .then(data => {
+            if (data.code === 200){
+              this.songMusicList = data.musicList
+            }
+          })
     },
     collect(row){
     //   收藏歌单
+      const data={
+        sid: row.id,
+        userId: this.user.id,
+      }
+      fetch('http://127.0.0.1:9001/songList/collectSongList/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+          .then(response => response.json())
+          .then(data => {
+            if (data.code === 200){
+              this.songMusicList = data.musicList
+            }
+            this.$notify({
+              title: data.msg
+            });
+          })
     },
     delcollect(row){
     //   取消收藏
@@ -669,9 +741,30 @@ export default {
     },
     updateSongList(row){
     //   更新歌单的post信息
+      this.$router.push({path: '/uploadPost', query: {uploadMold: 'songList', sid:row.id}})
     },
     uploadSongList(row){
-    //   直接上传歌单
+      //   直接上传歌单
+      const data={
+        sid:row.id,
+      }
+      fetch('http://127.0.0.1:9001/songList/uploadSongList/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+          .then(response => response.json())
+          .then(data => {
+            if (data.code === 200){
+              if (this.getType === 'songList')  this.getsongListCollectAndMine()
+              else if (this.getType === 'songMusic')  this.getsongListFrom(row.id)
+            }
+            this.$notify({
+              title: data.msg
+            });
+          })
     },
     delSongList(row){
     //   删除我的歌单  上传+未上传
@@ -745,14 +838,46 @@ export default {
           .then(response => response.json())
           .then(data => {
             if (data.code === 200){
-              if (type === 'search')  this.searchB()
+              if (this.getType === 'search' && type === 'music')  this.searchB()
               else if (type === 'comment') this.comment(this.musicCom)
+              else if (type === 'songList') this.getsongListFrom(this.songListNow.id)
+              else if (this.getType === 'songMusic' && type === 'music') this.getsongMusicList(this.songListNow.id)
             }
             this.$notify({
               title: data.msg
             });
           })
     },
+    addTo(sid){
+      const data = {
+        mid: this.musicToList.id,
+        sid: sid,
+      }
+      fetch('http://127.0.0.1:9001/song/collectMusicToList/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+          .then(response => response.json())
+          .then(data => {
+            if (data.code === 200){
+              this.songListMine  = data.songList
+            }
+            this.$notify({
+              title: data.msg
+            });
+          })
+    },
+    openAddSongList(){
+      this.$router.push({path: '/uploadPost', query: {uploadMold: 'songList'}})
+    },
+    press(){
+      this.$notify({
+        title: "已催办，等耐心等待哦~~"
+      });
+    }
   }
 }
 </script>

@@ -33,6 +33,7 @@ def serSongList(request):
                 'number': songList.number,
                 'support': songList.support,
                 'is_upload': songList.is_upload,
+                'is_upload_msg': dict(songList.choiceU)[songList.is_upload],
                 'audit_id': songList.audit_id,
                 'uid': songList.uid,
                 'avatar': songList.get_avatar_url() if songList.avatar else None,
@@ -53,7 +54,6 @@ def serSongList(request):
 
 
 def getsongAll(list, songLists):
-    list = []
     for songList in songLists:
         songList_data = {
             'id': songList.id,
@@ -62,6 +62,7 @@ def getsongAll(list, songLists):
             'number': songList.number,
             'support': songList.support,
             'is_upload': songList.is_upload,
+            'is_upload_msg': dict(songList.choiceU)[songList.is_upload],
             'audit_id': songList.audit_id,
             'uid': songList.uid,
             'avatar': songList.get_avatar_url() if songList.avatar else None,
@@ -130,6 +131,7 @@ def addSongList(request):
                 'number': songList.number,
                 'support': songList.support,
                 'is_upload': songList.is_upload,
+                'is_upload_msg': dict(songList.choiceU)[songList.is_upload],
                 'audit_id': songList.audit_id,
                 'uid': songList.uid,
                 'avatar': songList.get_avatar_url() if songList.avatar else None,
@@ -149,11 +151,18 @@ def uploadSongList(request):
     songList = models.songList.objects.filter(id=sid, delete_mark=0).first()
     if songList is None:
         return JsonResponse({'code': 501, 'msg': "歌单不存在"})
-    audit = models.auditLog.objects.create(songList_id=sid, audit_mold=1)
+    audits = models.auditLog.objects.filter(songList_id=songList.id, audit_mold=1, delete_mark=0).first()
+    if audits is None:
+        audit = models.auditLog.objects.create(songList_id=sid, audit_mold=1)
+        print(audit)
+    else:
+        return JsonResponse({'code': 501, 'msg': "歌单已上传"})
     songList.is_upload = 1
     songList.audit_id = audit.id
     songList.save()
     return JsonResponse({'code': 200, 'msg': "success"})
+
+
 
 
 def delSongList(request):
@@ -197,15 +206,42 @@ def collectSongList(request):
     models.listUser.objects.create(user_id=userId, songList_id=sid)
     return JsonResponse({'code': 200, 'msg': "success"})
 
+@csrf_exempt
+def getFormById(request):
+    # 传参songList的id 正在播放/歌单查看 listMusic根据songList_id delete_mark=0得到music_ids 得到sysMusic的list
+    data = json.loads(request.body)
+    sid = data.get('sid')
+    songList = models.songList.objects.filter(id=sid, delete_mark=0).first()
+    songList_data = {
+        'id': songList.id,
+        'name': songList.name,
+        'description': songList.description,
+        'number': songList.number,
+        'support': songList.support,
+        'is_upload': songList.is_upload,
+        'is_upload_msg': dict(songList.choiceU)[songList.is_upload],
+        'audit_id': songList.audit_id,
+        'uid': songList.uid,
+        'avatar': songList.get_avatar_url() if songList.avatar else None,
+    }
+    audit = models.auditLog.objects.filter(id=songList.audit_id).first()
+    if audit is not None:
+        auditResult = audit.get_audit_state_display()
+        auditContent = audit.msg_content
+        songList_data.update({'auditResult': auditResult, 'auditContent': auditContent})
+    return JsonResponse({'code': 200, 'songList': songList_data, 'msg': "success"})
 
+
+@csrf_exempt
 def getListById(request):
     # 传参songList的id 正在播放/歌单查看 listMusic根据songList_id delete_mark=0得到music_ids 得到sysMusic的list
     data = json.loads(request.body)
     sid = data.get('sid')
-    mids = models.listMusic.objects.filter(songList_id=sid, delete_mark=0).all().music_id
+    mids = models.listMusic.objects.filter(songList_id=sid, delete_mark=0).all()
+    print(mids)
     musicList = []
     for mid in mids:
-        music = models.sysMusic.objects.filter(id=mid).first()
+        music = models.sysMusic.objects.filter(id=mid.music_id).first()
         music_data = {
             'id': music.id,
             'name': music.name,
@@ -218,6 +254,7 @@ def getListById(request):
             'MD5': music.MD5,
             'url': music.url,
             'is_upload': dict(music.choiceU)[music.is_upload],  # Get the readable choice label
+            'is_upload_msg': dict(music.choiceU)[music.is_upload],
             'audit_id': music.audit_id,
             'delete_mark': dict(music.choiceD)[music.delete_mark],  # Get the readable choice label
             'create_date': music.create_date.strftime('%Y-%m-%d'),

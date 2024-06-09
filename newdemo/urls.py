@@ -102,6 +102,7 @@ urlpatterns = [
     # json 传参songList的id->sid + user
 
     # 正在播放/歌单查看
+    path('getFormById/', songList.getFormById),
     path('getListById/', songList.getListById),
     # json 传参songList的id->sid
     # return musicList

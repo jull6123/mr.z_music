@@ -46,9 +46,9 @@ def register(request):
     password = data.get('password')
     email = data.get('email')
     print(username, password, email)
-    if models.sysUser.objects.filter(email=email) is not None:
+    if models.sysUser.objects.filter(email=email).first() is not None:
         return JsonResponse({'code': 502, 'msg': "该邮箱已注册"})
-    if models.sysUser.objects.filter(username=username) is not None:
+    if models.sysUser.objects.filter(username=username).first() is not None:
         return JsonResponse({'code': 502, 'msg': "该用户名已存在"})
     models.sysUser.objects.create(username=username, password=password, email=email)
     return JsonResponse({'code': 200, 'msg': "success"})

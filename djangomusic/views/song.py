@@ -237,21 +237,38 @@ def supportMusic(request):
     music.save()
     return JsonResponse({'code': 200, 'msg': "success"})
 
+@csrf_exempt
 def collectMusicToList(request):
     # 传参music的id+songList的id 收藏音乐，新增listMusic数据，修改songList的数量 number+1
     data = json.loads(request.body)
     mid = data.get('mid')
-    sid = data.get('sId')
+    sid = data.get('sid')
     music = models.sysMusic.objects.filter(id=mid, delete_mark=0, is_upload=3)
     if music is None:
         return JsonResponse({'code': 503, 'msg': "该歌曲未上传，不可收藏"})
-    models.listMusic.objects.create(music_id=mid, songList_id=sid)
-    songList = models.listMusic.objects.filter(id=sid, delete_mark=0).first()
+    listMusics = models.listMusic.objects.filter(music_id=mid, songList_id=sid, delete_mark=0)
+    if listMusics is None:
+        models.listMusic.objects.create(music_id=mid, songList_id=sid)
+    else:
+        return JsonResponse({'code': 501, 'msg': "歌曲已添加"})
+    songList = models.songList.objects.filter(id=sid, delete_mark=0).first()
     if songList is None:
         return JsonResponse({'code': 501, 'msg': "歌单不存在"})
     songList.number += 1
     songList.save()
-    return JsonResponse({'code': 200, 'msg': "success"})
+    songList_data = {
+        'id': songList.id,
+        'name': songList.name,
+        'description': songList.description,
+        'number': songList.number,
+        'support': songList.support,
+        'is_upload': songList.is_upload,
+        'is_upload_msg': dict(songList.choiceU)[songList.is_upload],
+        'audit_id': songList.audit_id,
+        'uid': songList.uid,
+        'avatar': songList.get_avatar_url() if songList.avatar else None,
+    }
+    return JsonResponse({'code': 200, 'songList': songList_data, 'msg': "success"})
 
 
 def listenedMusic(request):
