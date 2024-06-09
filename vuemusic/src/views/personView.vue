@@ -4,8 +4,9 @@
       <el-col :span="6"></el-col>
       <el-col :span="12">
         <el-card style="margin-top: 20px">
-          <img v-if="form.avatar && !showPasswordFormItem" :src="form.avatarUrl" alt="Avatar" style="max-width: 200px;">
-          <input type="file" v-if="!showPasswordFormItem" @change="handleFileChange">
+<!--          <img v-if="form.avatar && !showPasswordFormItem" :src="form.avatarUrl" alt="Avatar" style="max-width: 200px;">-->
+<!--          <input type="file" v-if="!showPasswordFormItem" @change="handleFileChange">-->
+          <el-image :src="user.avatar" fit="cover" alt="User Avatar" style="width: 100px; height: 100px;"></el-image>
 
           <!--    <el-upload-->
           <!--        class="avatar-uploader"-->
@@ -66,7 +67,8 @@ export default {
     return {
       message: "修改密码",
       showPasswordFormItem: false,
-      form: {avatarUrl: ''},
+      form: {},
+      userAvatar:'',
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
       uid: this.$route.query.uid,
       rules: {
@@ -84,6 +86,13 @@ export default {
         ],
       }
     }
+  },
+  mounted() {
+    // 假设用户数据存储在变量user中，user.avatar包含了头像的路径
+    const userAvatarPath = this.user.avatar; // http://localhost:9091/media/avatars/1/3.jpg
+    const frontendBaseUrl = 'http://localhost:5174/';
+    const relativeAvatarPath = userAvatarPath.replace('http://localhost:9091', ''); // 将头像路径中的绝对地址替换为相对地址
+    this.userAvatar = frontendBaseUrl + relativeAvatarPath;
   },
   // mounted() {
   //   const storedAvatarUrl = ''
@@ -187,9 +196,6 @@ export default {
       else if(this.user.role === 1) this.$router.push('/home');
       else this.$router.push('/auditHome');
     },
-    handleAvatarSuccess(res) {
-      this.form.avatar = res
-    }
   }
 }
 </script>

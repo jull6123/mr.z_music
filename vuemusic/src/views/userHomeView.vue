@@ -16,8 +16,8 @@
             <el-button size="large" round="true"  style="width: 120px;" @click="Airouter">
               <span style="vertical-align: middle;">AI录歌</span>
             </el-button>
-            <el-button size="large" round="true"  style="width: 120px;" @click="Uploadrouter">
-              <span style="vertical-align: middle;">上传音乐</span>
+            <el-button size="large" round="true"  style="width: 120px;" @click="Helprouter">
+              <span style="vertical-align: middle;">帮助</span>
             </el-button>
             <el-col :span="4" :style="{opacity:myopacity}"><div class="grid-content bg-white"></div></el-col>
             <div>
@@ -62,9 +62,6 @@ export default{
     },
     Airouter(){
       this.$router.push({name:'Ai'});
-    },
-    Uploadrouter(){
-      this.$router.push({path: "/uploadPost", query: {uploadMold: 'music'}});
     },
   }
 }

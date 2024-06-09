@@ -19,17 +19,11 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {  
     count: 0,
-    commentHot: [],
-    commentNew: [],
   },  
   mutations: {  
     increment (state) {  
       state.count++  
     },
-    updateCommentHot(state, newDataHot, newDataNew) {
-      state.commentHot = newDataHot;
-      state.commentNew = newDataNew;
-    }
   }  
 })
 

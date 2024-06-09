@@ -86,7 +86,7 @@ urlpatterns = [
     # return songList
 
     # 上传歌单
-    path('songList/uploadSongList/', songList.uploadSongList),
+    # path('upload/', songList.upload),
     # json 传参songList.id-> sid
 
     # # 删除歌单/取消收藏
@@ -139,6 +139,7 @@ urlpatterns = [
     path('serUserList/', admin.serUserList),
     path('delById/', admin.delById),
     path('supportById/', admin.supportById),
+    path('upload/', admin.upload),
     path('serMusicList/', admin.serMusicList),
     path('serSongLists/', admin.serSongLists),
 

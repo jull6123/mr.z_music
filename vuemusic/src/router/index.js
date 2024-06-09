@@ -22,6 +22,11 @@ const router = createRouter({
       component:AiView
     },
     {
+      path:'/userHome',
+      name:'userHome',
+      component: () => import('../views/userHomeView.vue')
+    },
+    {
       path: '/',
       name: 'login',
       component: () => import('../views/LoginView.vue')

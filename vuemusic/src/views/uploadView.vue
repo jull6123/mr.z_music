@@ -7,7 +7,7 @@
           <el-steps :active="active" finish-status="success">
             <el-step title="上传音乐"></el-step>
             <el-step title="补充信息"></el-step>
-            <el-step title="信息查看"></el-step>
+            <el-step title="信息提交"></el-step>
           </el-steps>
 
           <el-card  v-if="active === 0">
@@ -31,16 +31,8 @@
               <el-form-item label="歌手">
                 <el-input v-model="form.singer" autocomplete="off"></el-input>
               </el-form-item>
-<!--              组件-->
               <el-form-item label="时长">
-<!--                <el-input v-model="form.duration" autocomplete="off"></el-input>-->
-                <el-time-picker
-                    v-model="form.duration"
-                    :picker-options="{
-                      selectableRange: '00:00:00 - 00:10:00'
-                    }"
-                    placeholder="时长选择">
-                </el-time-picker>
+                <el-input v-model="form.duration_seconds" autocomplete="off"></el-input>
               </el-form-item>
               <el-form-item label="描述">
                 <el-input v-model="form.description" autocomplete="off"></el-input>
@@ -52,9 +44,10 @@
                   <el-radio :value="3"> AI音频 </el-radio>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item>
-                <el-button type="primary" @click="uploadPost">上 传</el-button>
-                <el-button type="success" @click="back">返 回</el-button>
+              <el-form-item style="text-align: left; margin-right: 150px">
+                <el-button type="primary" @click="uploadPost">补 充</el-button>
+                <el-button type="primary" @click="active = active +1">跳 过</el-button>
+                <el-button type="primary" @click="backS"> 返 回 </el-button>
               </el-form-item>
             </el-form>
           </el-card>
@@ -63,14 +56,21 @@
             <div slot="header" class="clearfix">
               <h3 style="text-align: center">{{ form.name }}</h3>
             </div>
-            <div v-for="(value, key) in form" :key="key" class="text item">
-              <template v-if="key !== 'id' && key !== 'avatar' && key !== 'support' && key !== 'uid'
-                                 && key !== 'is_upload' && key !== 'url' && key !== 'auditContent'
-                                  &&　key !== 'audit_id' && key !== 'pid' && key !== 'auditResult'">
-                {{ customKeys[key] }}:{{ value }}
+            <div v-for="(value, key) in form" :key="key" class="text item" style="margin-top: 5px">
+              <template v-if="key !== 'id' && key !== 'avatar' && key !== 'support' && key !== 'uid' && key !== 'mold'
+                                 && key !== 'is_upload' && key !== 'url' && key !== 'auditContent'  && key !== 'msg'
+                                  &&　key !== 'audit_id' && key !== 'pid' && key !== 'auditResult' && key !== 'duration_seconds'">
+                {{ customKeys[key] }} :   {{ value }}
               </template>
             </div>
             <div style="padding-top: 30px; ">
+              <el-card v-if="form.is_upload === 0">
+                <div style="padding-top: 10px;text-align: right; margin-right: 150px">
+                  <el-button type="primary" v-if="form.mold !== 2" @click="upload('music',form.id)"> 上 传 </el-button>
+                  <el-button type="primary" @click="back"> 上一步 </el-button>
+                  <el-button type="primary" @click="backS"> 返 回 </el-button>
+                </div>
+              </el-card>
               <el-card v-if="form.is_upload > 1">
                 <div slot="header" class="clearfix">
                   <h3 style="text-align: center"> 审核结果 </h3>
@@ -80,30 +80,28 @@
                     {{ customKeys[key] }}:{{ value }}
                   </template>
                 </div>
-                <div style="border-top: 1px dashed #ccc; padding-top: 10px;">
+                <div style="padding-top: 10px; text-align: right; margin-right: 150px">
                   <el-button type="success" @click="backQ"> 确 认 </el-button>
                 </div>
               </el-card>
-
               <el-card v-if="form.is_upload === 1">
                 <div slot="header" class="clearfix">
                   <h3 style="text-align: center"> 正在审核中…… </h3>
                 </div>
-                <div style="padding-top: 10px;">
-                  <el-button type="primary" @click="alter"> 催 办 </el-button>
+                <div style="padding-top: 10px; text-align: right; margin-right: 150px">
+                  <el-button type="primary" @click="press"> 催 办 </el-button>
                   <el-button type="primary" @click="backS"> 返 回 </el-button>
                 </div>
               </el-card>
             </div>
           </el-card>
-
         </el-card>
 
 
         <el-card v-if="uploadMold==='songList'">
           <el-steps :active="active" finish-status="success">
             <el-step title="补充信息"></el-step>
-            <el-step title="信息查看"></el-step>
+            <el-step title="信息提交"></el-step>
           </el-steps>
 
           <el-card v-if="active === 0">
@@ -117,15 +115,41 @@
                 <el-input v-model="forms.description" autocomplete="off"></el-input>
               </el-form-item>
               <el-form-item>
-                <el-button v-if="sid===0" type="primary" @click="uploadPostS">新 建</el-button>
                 <el-button v-if="sid!==0" type="primary" @click="uploadPostS">修 改</el-button>
-                <el-button v-if="sid!==0" type="primary" @click="uploadPostSS">上 传</el-button>
+                <el-button v-if="sid===0" type="primary" @click="uploadPostS">新 建</el-button>
+                <el-button v-if="sid!==0" type="primary" @click="active=active+1">跳 过</el-button>
                 <el-button type="success" @click="backS">返 回</el-button>
               </el-form-item>
             </el-form>
           </el-card>
 
-          <el-card  v-if="active === 1">
+          <el-card v-if="active === 1">
+            <el-card class="box-card" >
+              <div slot="header" class="clearfix">
+                <h3 style="text-align: center">歌 单 歌 曲</h3>
+              </div>
+              <div style="margin-top: 5px">
+                <el-table :data="songMusicList" border stripe :header-cell-class-name="'headerBg'"
+                          style="margin-top: 30px">
+                  <el-table-column prop="name" label="歌曲名" width="140"></el-table-column>
+                  <el-table-column prop="singer" label="歌手"></el-table-column>
+                  <el-table-column prop="support" label="点赞数"></el-table-column>
+                  <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>
+                  <el-table-column label="操作" width="500" align="center">
+                    <template #default="scope">
+                      <el-button type="success" @click="delAnyById('musicCollect', scope.row.id)"> 删 除 </el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+              <div style="padding-top: 30px; text-align: right;" >
+                <el-button type="primary" @click="active = active + 1"> 确 认 </el-button>
+                <el-button type="primary" @click="back"> 返 回 </el-button>
+              </div>
+            </el-card>
+          </el-card>
+
+          <el-card  v-if="active === 2">
             <div slot="header" class="clearfix">
               <h3 style="text-align: center">{{ forms.name }}</h3>
             </div>
@@ -137,6 +161,12 @@
               </template>
             </div>
             <div style=" padding-top: 30px;">
+              <el-card v-if="forms.is_upload === 0">
+                <div style="padding-top: 10px;">
+                  <el-button type="primary" @click="upload('singList',forms.id)"> 上 传 </el-button>
+                  <el-button type="primary" @click="back"> 返 回 </el-button>
+                </div>
+              </el-card>
               <el-card v-if="forms.is_upload > 1">
                 <div slot="header" class="clearfix">
                   <h3 style="text-align: center"> 审核结果 </h3>
@@ -150,13 +180,12 @@
                   <el-button type="success" @click="backQ"> 确 认 </el-button>
                 </div>
               </el-card>
-
               <el-card v-if="forms.is_upload === 1">
                 <div slot="header" class="clearfix">
                   <h3 style="text-align: center"> 正在审核中…… </h3>
                 </div>
                 <div style="padding-top: 10px;">
-                  <el-button type="primary" @click="alter"> 催 办 </el-button>
+                  <el-button type="primary" @click="press"> 催 办 </el-button>
                   <el-button type="primary" @click="backS"> 返 回 </el-button>
                 </div>
               </el-card>
@@ -182,15 +211,16 @@ export default{
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
       form: {avatarUrl: ''},
       forms: {avatarUrl: ''},
+      songMusicList: [],
       mid: this.$route.query.mid? this.$route.query.mid : 0,
       pid: this.$route.query.pid? this.$route.query.pid : 0,
       sid: this.$route.query.sid? this.$route.query.sid : 0,
+      where: this.$route.query.where? this.$route.query.where : 'home',
       customKeys: {
         name: '名称',
         description: '描述',
         owner: '所属者',
         singer: '歌手',
-        mold: '类型',
         nameParent: '源音乐',
         userName: '上传者',
         username: '姓名',
@@ -202,6 +232,7 @@ export default{
         auditContent: '详细说明',
         number: '歌曲数量',
         avatar: '头像',
+        mold_msg: '类型',
       }
     }
   },
@@ -236,7 +267,9 @@ export default{
               if (data.code === 200){
                 this.form = data.music
                 // 正在审核:已上传，只可查看
-                if (data.music.is_upload === 1) this.active=2
+                if (data.music.is_upload >= 1) this.active=2
+                else if (data.music.is_upload === 0) this.active=1
+
                 const storedAvatarUrl = data.music.avatar;
                 if (storedAvatarUrl) {
                   this.form.avatarUrl = storedAvatarUrl;
@@ -257,8 +290,10 @@ export default{
             .then(data => {
               if (data.code === 200){
                 this.forms = data.songList
-                // 正在审核:已上传，只可查看
-                if (data.songList.is_upload === 1) this.active=1
+                if (data.songList.is_upload === 1) this.active=2
+                else if (data.songList.is_upload === 0) this.active=0
+                this.getSongListById(this.sid)
+
                 const storedAvatarUrlS = data.songList.avatar;
                 if (storedAvatarUrlS) {
                   this.forms.avatarUrl = storedAvatarUrlS;
@@ -269,44 +304,18 @@ export default{
               });
             })
       }
-
-    },
-    back(){
-      this.active--
-    },
-    backQ(){
-      this.active++
-      setTimeout(() => {
-      }, 1000);
-      this.$router.push('/home')
-    },
-    backS(){
-      this.$router.push('/home')
-    },
-    alter(){
-      this.$notify({
-        title: "正在努力赶工中，请耐心等待！"
-      });
     },
     delMusic(){
-      id = this.mid
-      if(id !== 0){
-        fetch('http://127.0.0.1:9001/song/addMusic/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(this.user,id),
-        })
-            .then(response => response.json())
-            .then(data => {
-              if (data.code === 200){
-                this.active--
-              }
-              this.$notify({
-                title: data.msg
-              });
-            })
+      if (!this.file) {
+        this.$notify({
+          title: '--oops--',
+          message: '请先选择文件',
+          type: 'warning'
+        });
+        return;
+      }
+      if(this.mid !== 0){
+        this.delAnyById('music', this.mid)
       }
     },
     uploadMusic(){
@@ -345,7 +354,7 @@ export default{
       formDatas.append('singer', this.form.singer);
       formDatas.append('description', this.form.description);
       formDatas.append('avatar', this.form.avatar);
-      formDatas.append('duration', this.form.duration);
+      formDatas.append('duration', this.form.duration_seconds);
       formDatas.append('mold', this.form.mold);
       formDatas.append('pid', this.pid);
       fetch('http://127.0.0.1:9001/song/addMusic/', {
@@ -355,9 +364,9 @@ export default{
           .then(response => response.json())
           .then(data => {
             if (data.code === 200){
-              this.mid = data.mid
-              if (this.active === 1)
-                this.active++
+              this.mid = data.music.id
+              this.form = data.music
+              this.active++
             }
             this.$notify({
               title: data.msg
@@ -379,51 +388,86 @@ export default{
           .then(response => response.json())
           .then(data => {
             if (data.code === 200){
+              this.forms = data.songList
               this.sid = data.sid
+              this.active++
             }
             this.$notify({
               title: data.msg
             });
           })
     },
-    uploadPostSS(){
-      const formDatass = new FormData();
-      formDatass.append('type', 'edit');
-      formDatass.append('userId', this.user.id);
-      formDatass.append('sid', this.sid);
-      formDatass.append('name', this.forms.name);
-      formDatass.append('description', this.forms.description);
-      formDatass.append('avatar', this.forms.avatar);
-      fetch('http://127.0.0.1:9001/songList/addSongList/', {
+    upload(type,id){
+      fetch('http://127.0.0.1:9001/upload/', {
         method: 'POST',
-        body: formDatass
+        body: JSON.stringify({type:type, id:id}),
       })
           .then(response => response.json())
           .then(data => {
             if (data.code === 200){
-              this.sid = data.sid
-              fetch('http://127.0.0.1:9001/songList/uploadSongList/', {
-                method: 'POST',
-                body: JSON.stringify(this.sid),
-              })
-                  .then(response => response.json())
-                  .then(data => {
-                    if (data.code === 200){
-                      if (this.active === 1)
-                        this.active++
-                    }
-                  })
+              this.backQ()
             }
-            this.$notify({
-              title: data.msg
-            });
           })
-
+    },
+    getSongListById(sid){
+      fetch('http://127.0.0.1:9001/getListById/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({sid:sid}),
+      })
+          .then(response => response.json())
+          .then(data => {
+            if (data.code === 200){
+              this.songMusicList = data.musicList
+            }
+          })
+    },
+    delAnyById(type, id){
+      const data = {
+        getType: type,
+        id:id,
+        userId:this.user.id,
+        sid:this.sid,
+      }
+      fetch('http://127.0.0.1:9001/delById/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+          .then(response => response.json())
+          .then(data => {
+            if (data.code === 200){
+              this.getSongListById(this.sid)
+            }
+          })
+    },
+    back(){
+      this.active--
+      this.load()
+    },
+    backQ(){
+      this.active++
+      setTimeout(() => {
+      }, 1000);
+      this.$router.push({path: '/home', query: {where: this.where}})
+    },
+    backS(){
+      this.$router.push({path: '/home', query: {where: this.where}})
+    },
+    press(){
+      this.$notify({
+        title: "正在努力赶工中，请耐心等待！"
+      });
     },
   }
 }
 </script>
 
 <style scoped>
-
-</style>
+.headerBg {
+  background: #eee !important;
+}</style>

@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from djangomusic import models
 from newdemo import settings
 
-
+@csrf_exempt
 def listHistoryById(request):
     # 传参user,我听过的，通过user.id在userMusic得到music_id（orderby -listen_time）列表，通过music_id查询musicList
     data = json.loads(request.body)
@@ -18,10 +18,29 @@ def listHistoryById(request):
     uMusics = models.userMusic.objects.filter(user_id=userId).order_by('-listen_time').all()[:30]
     musicList = []
     for uMusic in uMusics:
-        musicList.append(models.sysMusic.objects.filter(id=uMusic.id).first())
+        music = models.sysMusic.objects.filter(id=uMusic.music_id, delete_mark=0).first()
+        if music is not None:
+            music_data = {
+                'id': music.id,
+                'name': music.name,
+                'singer': music.singer,
+                'avatar': music.get_avatar_url() if music.avatar else None,
+                'duration_time': seconds_to_hms(music.duration_seconds),
+                'description': music.description,
+                'support': music.support,
+                'mold': music.get_mold_display(),
+                'url': music.url,
+                'is_upload': music.is_upload,
+                'is_upload_msg': dict(music.choiceU)[music.is_upload],
+                'audit_id': music.audit_id,
+                'pid': music.pid,
+                'uid': music.uid,
+                'listened_time': uMusic.listen_time.strftime('%Y-%m-%d %H:%M:%S'),
+            }
+            musicList.append(music_data)
     return JsonResponse({'code': 200, 'musicList': musicList, 'msg': "success"})
 
-
+@csrf_exempt
 def clearHistoryById(request):
     # 传参user,清空我听过的，通过user.id在userMusic删除
     data = json.loads(request.body)
@@ -39,10 +58,14 @@ def serMusic(request):
     data = json.loads(request.body)
     type = data.get('type')
     serName = data.get('serName')
-    list=[]
+    userId = data.get('userId')
+    list = []
     if type == 'search':
         musicList = models.sysMusic.objects.filter(name__icontains=serName, singer__icontains=serName,
                                                    is_upload=3, delete_mark=0).order_by('-upload_time').all()
+    elif type == 'mine':
+        musicList = models.sysMusic.objects.filter(name__icontains=serName, singer__icontains=serName, uid=userId,
+                                                    delete_mark=0).order_by('-upload_time').exclude(is_upload=2).all()
     elif type == 'hot':
         musicList = models.sysMusic.objects.filter(is_upload=3, delete_mark=0).order_by('-support').all()[:10]
     elif type == 'new':
@@ -55,18 +78,20 @@ def serMusic(request):
             'name': music.name,
             'singer': music.singer,
             'avatar': music.get_avatar_url() if music.avatar else None,
-            'duration_time': music.duration_time.strftime('%H:%M:%S'),
+            'duration_time':seconds_to_hms(music.duration_seconds),
             'description': music.description,
             'support': music.support,
             'mold': music.get_mold_display(),
             'url': music.url,
             'is_upload': music.is_upload,
+            'is_upload_msg': dict(music.choiceU)[music.is_upload],
             'audit_id': music.audit_id,
             'pid': music.pid,
             'uid': music.uid,
         }
         list.append(music_data)
     return JsonResponse({'code': 200, 'musicList': list, 'msg': "success"})
+
 
 @csrf_exempt
 def addMusic(request):
@@ -89,9 +114,10 @@ def addMusic(request):
             obj = models.sysMusic.objects.filter(MD5=music_md5_hash).first()
             # 已存在该文件
             if obj is not None:
-                if obj.is_delete == 1:
+                if obj.delete_mark == 1:
                     # 已删除，修改删除字段
-                    obj.update(is_delete=0)
+                    obj.delete_mark = 0
+                    obj.save()
                 return JsonResponse({'code': 502, 'msg': "该音乐已存在，不必上传"})
             # Save music file
             music_file_path = os.path.join(settings.MEDIA_ROOT, 'music')
@@ -107,7 +133,6 @@ def addMusic(request):
             url = request.build_absolute_uri(settings.MEDIA_URL + 'music/' + music_md5_hash + '.mp3')
             # Save music info to database
             music = models.sysMusic.objects.create(
-                duration_time='00:00',
                 MD5=music_md5_hash,
                 url=url
             )
@@ -129,10 +154,11 @@ def addMusic(request):
                 avatar_directory = os.path.join(settings.MEDIA_ROOT, 'avatars/music', mid)
                 if not os.path.exists(avatar_directory):
                     os.makedirs(avatar_directory)
-                original_avatar_path = music.avatar.path
-                # 删除原始头像文件
-                if os.path.exists(original_avatar_path):
-                    os.remove(original_avatar_path)
+                if music.avatar:
+                    original_avatar_path = music.avatar.path
+                    # 删除原始头像文件
+                    if os.path.exists(original_avatar_path):
+                        os.remove(original_avatar_path)
                 avatar_path = os.path.join(avatar_directory, avatar.name)
                 with open(avatar_path, 'wb') as f:
                     for chunk in avatar.chunks():
@@ -143,19 +169,16 @@ def addMusic(request):
             music.name = name
             music.singer = singer
             music.description = description
-            music.duration_time = duration
+            music.duration_seconds = duration
             music.mold = int(mold)
             if mold == '1':
-                # 已有审核数据
-                if music.is_upload == 1 and music.audit_id != 0:
-                    return JsonResponse({'code': 504, 'msg': "正在审核中，不可修改"})
-                audit = models.auditLog.objects.create(music_id=mid)
-                music.audit_id = audit.id
-                msg = "已上传，等待审核"
+                music.is_upload = 0
+                music.uid = userId
+                msg = "该音乐已创建，等待下一步"
             elif mold == '2':
                 music.is_upload = 0
                 music.uid = userId
-                msg = "源音频已上传，等待下一步"
+                msg = "源音频已创建，等待下一步"
             elif mold == '3':
                 music.is_upload = 0
                 music.uid = userId
@@ -164,33 +187,50 @@ def addMusic(request):
             else:
                 return JsonResponse({'code': 504, 'msg': "mold错误"})
             music.save()
-            return JsonResponse({'code': 200, 'mid': music.id, 'msg': msg})
+            music_data = getMusic(music.id)
+            return JsonResponse({'code': 200, 'music': music_data, 'msg': msg})
         elif request.POST.get('type') == 'get':
             mid = request.POST.get('mid')
-            music = models.sysMusic.objects.filter(id=mid, delete_mark=0).first()
-            if music is None:
-                return JsonResponse({'code': 501, 'msg': "该歌曲文件不存在"})
-            audit = models.auditLog.objects.filter(id=music.audit_id).first()
+            music_data = getMusic(mid)
+            if music_data['msg'] == "success":
+                return JsonResponse({'code': 200, 'music': music_data, 'msg': "success"})
+            return JsonResponse({'code': 501, 'msg': "该歌曲文件不存在"})
+
+
+def getMusic(mid):
+    music_data = {
+        'msg': '',
+    }
+    music = models.sysMusic.objects.filter(id=mid, delete_mark=0).first()
+    if music is not None:
+        audit = models.auditLog.objects.filter(id=music.audit_id).first()
+        if audit is None:
+            auditResult = ''
+            auditContent = ''
+        else:
             auditResult = audit.get_audit_state_display()
             auditContent = audit.msg_content
-            music_data = {
-                'id': music.id,
-                'name': music.name,
-                'singer': music.singer,
-                'avatar': music.get_avatar_url() if music.avatar else None,
-                'duration': music.duration_time.strftime('%H:%M:%S'),
-                'description': music.description,
-                'support': music.support,
-                'mold': music.get_mold_display(),
-                'url': music.url,
-                'is_upload': music.is_upload,
-                'audit_id': music.audit_id,
-                'pid': music.pid,
-                'uid': music.uid,
-                'auditResult': auditResult,
-                'auditContent': auditContent,
-            }
-            return JsonResponse({'code': 200, 'music': music_data, 'msg': "success"})
+        music_data = {
+            'id': music.id,
+            'name': music.name,
+            'singer': music.singer,
+            'avatar': music.get_avatar_url() if music.avatar else None,
+            'duration_seconds':music.duration_seconds,
+            'duration': seconds_to_hms(music.duration_seconds),
+            'description': music.description,
+            'support': music.support,
+            'mold': music.mold,
+            'mold_msg': music.get_mold_display(),
+            'url': music.url,
+            'is_upload': music.is_upload,
+            'audit_id': music.audit_id,
+            'pid': music.pid,
+            'uid': music.uid,
+            'auditResult': auditResult,
+            'auditContent': auditContent,
+            'msg': 'success',
+        }
+    return music_data
 
 
 def createMusic(request):
@@ -270,15 +310,24 @@ def collectMusicToList(request):
     }
     return JsonResponse({'code': 200, 'songList': songList_data, 'msg': "success"})
 
-
+@csrf_exempt
 def listenedMusic(request):
     # 传参music的id+user 听过，add_userMusic或修改听歌时间
     data = json.loads(request.body)
     mid = data.get('mid')
     userId = data.get('userId')
-    uMusic = models.userMusic.objects.filter(user_id=userId, music_id=mid)
+    uMusic = models.userMusic.objects.filter(user_id=userId, music_id=mid).first()
     if uMusic is None:
-        models.userMusic.objects.create(user_id=userId, music_id=mid)
+        uMusic = models.userMusic.objects.create(user_id=userId, music_id=mid)
     else:
-        uMusic[0].update(listen_time=timezone.now().timestamp())
+        uMusic.save()
+    return JsonResponse({'code': 200, 'listenedId': uMusic.id, 'msg': "success"})
+
+
+def seconds_to_hms(seconds):
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
 

@@ -174,6 +174,8 @@ def auditResult(request):
     if music is None:
         return JsonResponse({'code': 501, 'msg': "所审核的音乐已删除"})
     music.is_upload = stateInt-1
+    if music.mold == 1:
+        music.uid = 0
     music.save()
     audit.audit_state = stateInt
     audit.msg_content = content
