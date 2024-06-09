@@ -183,9 +183,9 @@ export default {
       }
     },
     back(){
-      if(this.user.role === 0) this.$router.push('/ahome');
-      else if(this.user.role === 1) this.$router.push('/uhome');
-      else this.$router.push('/ahome');
+      if(this.user.role === 0) this.$router.push('/adminHome');
+      else if(this.user.role === 1) this.$router.push('/home');
+      else this.$router.push('/auditHome');
     },
     handleAvatarSuccess(res) {
       this.form.avatar = res

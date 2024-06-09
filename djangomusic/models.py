@@ -169,6 +169,18 @@ class sysComment(models.Model):
     delete_mark = models.IntegerField(choices=choiceD, default=0, verbose_name="删除标志,0:未删,1:已删")
     pid = models.IntegerField(default=0, verbose_name="父级评论id")
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'music_id': self.music_id,
+            'content': self.content,
+            'support': self.support,
+            'delete_mark': dict(self.choiceD)[self.delete_mark],  # Get the readable choice label
+            'create_time': self.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'pid': self.pid,
+        }
+
 
 class userMusic(models.Model):
     user_id = models.IntegerField(verbose_name="用户id")

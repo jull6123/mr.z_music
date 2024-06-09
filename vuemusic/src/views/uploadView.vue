@@ -33,7 +33,14 @@
               </el-form-item>
 <!--              组件-->
               <el-form-item label="时长">
-                <el-input v-model="form.duration" autocomplete="off"></el-input>
+<!--                <el-input v-model="form.duration" autocomplete="off"></el-input>-->
+                <el-time-picker
+                    v-model="form.duration"
+                    :picker-options="{
+                      selectableRange: '00:00:00 - 00:10:00'
+                    }"
+                    placeholder="时长选择">
+                </el-time-picker>
               </el-form-item>
               <el-form-item label="描述">
                 <el-input v-model="form.description" autocomplete="off"></el-input>

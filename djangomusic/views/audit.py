@@ -29,7 +29,15 @@ def getAuditList(request):
             if music is not None:
                 # Create a dictionary to hold the modified data
                 audit_dict = {
-                    "id": auditM.id,
+                    'id': auditM.id,
+                    'songList_id': auditM.songList_id,
+                    'audit_mold': dict(auditM.choiceM)[auditM.audit_mold],
+                    'music_id': auditM.music_id,
+                    'audit_id': auditM.audit_id,
+                    'audit_state': auditM.audit_state,
+                    'audit_state_msg': dict(auditM.choiceS)[auditM.audit_state],
+                    'msg_content': auditM.msg_content,
+                    'delete_mark': dict(auditM.choiceD)[auditM.delete_mark],
                     "iid": music.id,
                     "name": music.name,
                     "url": music.url
@@ -61,6 +69,14 @@ def getAuditList(request):
             if songList is not None:
                 audit_dict = {
                     "id": auditS.id,
+                    'songList_id': auditS.songList_id,
+                    'audit_mold': dict(auditS.choiceM)[auditS.audit_mold],
+                    'music_id': auditS.music_id,
+                    'audit_id': auditS.audit_id,
+                    'audit_state': auditS.audit_state,
+                    'audit_state_msg': dict(auditS.choiceS)[auditS.audit_state],
+                    'msg_content': auditS.msg_content,
+                    'delete_mark': dict(auditS.choiceD)[auditS.delete_mark],
                     "iid": songList.id,
                     "name": songList.name,
                     "url": '',
@@ -107,6 +123,8 @@ def auditById(request):
         return JsonResponse({'code': 501, 'msg': "歌曲不存在"})
     if music.uid != 0:
         userName = models.sysUser.objects.filter(id=music.uid, delete_mark=0).first().username
+    else:
+        userName = '无所有者'
     music_data = {
         'aid': id,
         'id': music.id,
@@ -121,7 +139,7 @@ def auditById(request):
         'type': type,
         'content': audit.msg_content
     }
-    return JsonResponse({'code': 200, 'music': music_data, 'msg': "歌曲不存在"})
+    return JsonResponse({'code': 200, 'music': music_data, 'msg': "success"})
 
 
 @csrf_exempt
@@ -132,9 +150,8 @@ def auditResult(request):
     # type = “songList" 查询auditLog  修改audit_state+msg_content
     data = json.loads(request.body)
     userId = data.get('userId')
-    form = data.get("form")
-    aid = form['aid']
-    type = form['type']
+    aid = data.get('aid')
+    type = data.get('type')
     state = data.get('state')
     if state == "failure":
         stateInt = 3
@@ -156,6 +173,10 @@ def auditResult(request):
     music = models.sysMusic.objects.filter(id=audit.music_id, delete_mark=0).first()
     if music is None:
         return JsonResponse({'code': 501, 'msg': "所审核的音乐已删除"})
-    music.update(is_upload=stateInt-1)
-    audit.update(audit_state=stateInt, msg_content=content, audit_id=userId)
-    return {'code': 200, 'msg': "success"}
+    music.is_upload = stateInt-1
+    music.save()
+    audit.audit_state = stateInt
+    audit.msg_content = content
+    audit.audit_id = userId
+    audit.save()
+    return JsonResponse({'code': 200, 'msg': "success"})

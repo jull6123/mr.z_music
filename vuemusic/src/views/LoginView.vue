@@ -57,10 +57,10 @@ export default {
                   localStorage.setItem("user", JSON.stringify(data.user))
                   if(data.user.role === 0) this.$router.push('/adminHome');
                   else if(data.user.role === 2) this.$router.push('/auditHome');
-                  else
+                  else this.$router.push('/home');
                   // this.$router.push({path: "/uploadPost", query: {uploadMold: 'music', mid: 1}});
                   // this.$router.push({path: "/uploadPost", query: {uploadMold: 'music'}});
-                  this.$router.push({path: "/uploadPost", query: {uploadMold: 'songList', sid: 1}});
+                  // this.$router.push({path: "/uploadPost", query: {uploadMold: 'songList', sid: 1}});
                   // this.$router.push({path: "/uploadPost", query: {uploadMold: 'songList'}});
                   // this.$router.push({path: "/person", query: {uid: 1}})
                 }
@@ -78,6 +78,7 @@ export default {
 <style>
 .wrapper {
   height: 100vh;
+  background-image: linear-gradient(to bottom right, #FC466B, #3F5EFB);
   overflow: hidden;
 }
 .loginButton{

@@ -158,6 +158,7 @@ def delById(request):
     data = json.loads(request.body)
     type = data.get('getType', None)
     id = data.get('id', None)
+    print(type,id)
     # 删除用户
     if type == 'user':
         user = models.sysUser.objects.filter(id=id, delete_mark=0).first()
@@ -208,7 +209,7 @@ def delById(request):
             return JsonResponse({'code': 501, 'msg': "该歌曲已不再歌单中"})
         return JsonResponse({'code': 200, 'msg': "success"})
 
-
+@csrf_exempt
 def supportById(request):
     data = json.loads(request.body)
     id = data.get("id")
