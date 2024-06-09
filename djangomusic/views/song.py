@@ -29,7 +29,7 @@ def clearHistoryById(request):
     models.userMusic.objects.filter(user_id=userId).all().delete()
     return JsonResponse({'code': 200, 'msg': "success"})
 
-
+@csrf_exempt
 def serMusic(request):
     # 传参type+serName,根据type查询具体的榜单
     # type = “search" 搜索 根据serMusic搜索serName name/singer serName="",则展示全部is_upload=3   【delete_mark=0】
@@ -39,17 +39,34 @@ def serMusic(request):
     data = json.loads(request.body)
     type = data.get('type')
     serName = data.get('serName')
+    list=[]
     if type == 'search':
         musicList = models.sysMusic.objects.filter(name__icontains=serName, singer__icontains=serName,
                                                    is_upload=3, delete_mark=0).order_by('-upload_time').all()
     elif type == 'hot':
         musicList = models.sysMusic.objects.filter(is_upload=3, delete_mark=0).order_by('-support').all()[:10]
     elif type == 'new':
-        musicList = models.sysMusic.objects.filter(is_upload=3, delete_mark=0).order_by('-upload_time').all()[
-                    :30].order_by('-support').all()[:10]
+        musicList = models.sysMusic.objects.filter(is_upload=3, delete_mark=0).order_by('-upload_time', '-support')[:10]
     elif type == 'ai':
         musicList = models.sysMusic.objects.filter(is_upload=3, mold=2, delete_mark=0).order_by('-upload_time').all()[:5]
-    return JsonResponse({'code': 200, 'musicList': musicList, 'msg': "success"})
+    for music in musicList:
+        music_data = {
+            'id': music.id,
+            'name': music.name,
+            'singer': music.singer,
+            'avatar': music.get_avatar_url() if music.avatar else None,
+            'duration_time': music.duration_time.strftime('%H:%M:%S'),
+            'description': music.description,
+            'support': music.support,
+            'mold': music.get_mold_display(),
+            'url': music.url,
+            'is_upload': music.is_upload,
+            'audit_id': music.audit_id,
+            'pid': music.pid,
+            'uid': music.uid,
+        }
+        list.append(music_data)
+    return JsonResponse({'code': 200, 'musicList': list, 'msg': "success"})
 
 @csrf_exempt
 def addMusic(request):

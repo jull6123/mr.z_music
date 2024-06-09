@@ -112,7 +112,7 @@ urlpatterns = [
 
     # 评论界面
     # 搜索评论：热门评论 + 最新评论
-    path("getComments", comment.getComments),
+    path("getComments/", comment.getComments),
     # json 传参type: hot/new + music.id->mid 根据type查询具体的list
     # return comment(comment+user.id+user.name+user.avatar
 

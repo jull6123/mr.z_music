@@ -1,6 +1,7 @@
 <template>
+  <!--注册界面-->
   <div class="wrapper">
-    <div style="margin: 100px auto; background-color: #fff; width: 350px; height: 400px; padding: 20px; border-radius: 10px">
+    <div style="margin: 200px auto; background-color: #fff; width: 350px; height: 400px; padding: 20px; border-radius: 10px">
       <div style="margin: 20px 0; text-align: center; font-size: 24px"><b>注 册</b></div>
       <el-form :model="user" :rules="rules" ref="userForm">
         <el-form-item prop="username">
@@ -86,7 +87,8 @@ export default {
 
 <style>
 .wrapper {
-  height: 500px;
+  height: 100vh;
+  background-image: linear-gradient(to bottom right, #FC466B, #3F5EFB);
   overflow: hidden;
 }
 </style>

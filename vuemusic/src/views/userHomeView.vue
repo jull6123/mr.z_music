@@ -1,4 +1,5 @@
 <template>
+  <!--用户首页-->
   <div class="fullscreen-background "></div>
   <div class="bg-white2"></div>
   <div class="common-layout">

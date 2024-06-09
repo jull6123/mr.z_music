@@ -7,7 +7,7 @@ from django.views.decorators.csrf import csrf_exempt
 from djangomusic import models
 from newdemo import settings
 
-
+@csrf_exempt
 def serSongList(request):
     # 传参type+user+serSName,根据type查询具体的list
     # type = “search" 搜索 根据serSName搜索songList name/desc serSName="",则展示全部 is_upload=3   【delete_mark=0】
@@ -18,20 +18,61 @@ def serSongList(request):
     type = data.get('type')
     userId = data.get('userId')
     serSName = data.get('serSName')
-    if type == 'search':
-        songList = models.songList.objects.filter(name__icontains=serSName, singer__icontains=serSName,
-                                                   is_upload=3, delete_mark=0).order_by('-upload_time').all()
-    elif type == 'mine':
-        songList = models.songList.objects.filter(uid=userId, delete_mark=0).order_by('-create_date').all()
-    elif type == 'collect':
-        sids = models.listUser.objects.filter(user_id=userId, delete_mark=0).all().songList_id
-        songList = []
+    if type == 'get':
+        listMine=[]
+        songListMine = models.songList.objects.filter(name__icontains=serSName, uid=userId, delete_mark=0).order_by('-create_date').all()
+        getsongAll(listMine, songListMine)
+        listCollect=[]
+        sids = models.listUser.objects.filter(user_id=userId, delete_mark=0).all()
         for sid in sids:
-            songList.append(models.songList.objects.filter(id=sid, delete_mark=0).first())
+            songList = models.songList.objects.filter(id=sid.songList_id, name__icontains=serSName,  delete_mark=0).first()
+            songList_data = {
+                'id': songList.id,
+                'name': songList.name,
+                'description': songList.description,
+                'number': songList.number,
+                'support': songList.support,
+                'is_upload': songList.is_upload,
+                'audit_id': songList.audit_id,
+                'uid': songList.uid,
+                'avatar': songList.get_avatar_url() if songList.avatar else None,
+            }
+            if songList.is_upload > 1:
+                audit = models.auditLog.objects.filter(id=songList.audit_id, delete_mark=0).first()
+                if audit is not None:
+                    auditResult = audit.get_audit_state_display()
+                    auditContent = audit.msg_content
+                    songList_data.update({'auditResult': auditResult, 'auditContent': auditContent})
+            listCollect.append(songList_data)
+        return JsonResponse({'code': 200, 'listMine': listMine, 'listCollect': listCollect, 'msg': 'success'})
     elif type == 'hot':
-        songList = models.songList.objects.filter(is_upload=3, delete_mark=0).order_by('-support').all()[:15]
-    return JsonResponse({'code': 200, 'songList': songList, 'msg': "success"})
+        listHot = []
+        songLists = models.songList.objects.filter(is_upload=3, delete_mark=0).order_by('-support').all()[:15]
+        getsongAll(listHot, songLists)
+    return JsonResponse({'code': 200, 'listHot': listHot, 'msg': "success"})
 
+
+def getsongAll(list, songLists):
+    list = []
+    for songList in songLists:
+        songList_data = {
+            'id': songList.id,
+            'name': songList.name,
+            'description': songList.description,
+            'number': songList.number,
+            'support': songList.support,
+            'is_upload': songList.is_upload,
+            'audit_id': songList.audit_id,
+            'uid': songList.uid,
+            'avatar': songList.get_avatar_url() if songList.avatar else None,
+        }
+        if songList.is_upload > 1:
+            audit = models.auditLog.objects.filter(id=songList.audit_id, delete_mark=0).first()
+            if audit is not None:
+                auditResult = audit.get_audit_state_display()
+                auditContent = audit.msg_content
+                songList_data.update({'auditResult': auditResult, 'auditContent': auditContent})
+        list.append(songList_data)
 
 @csrf_exempt
 def addSongList(request):
@@ -82,35 +123,22 @@ def addSongList(request):
             songList = models.songList.objects.filter(id=sid, delete_mark=0).first()
             if songList is None:
                 return JsonResponse({'code': 501, 'msg': "该歌单不存在"})
+            songList_data = {
+                'id': songList.id,
+                'name': songList.name,
+                'description': songList.description,
+                'number': songList.number,
+                'support': songList.support,
+                'is_upload': songList.is_upload,
+                'audit_id': songList.audit_id,
+                'uid': songList.uid,
+                'avatar': songList.get_avatar_url() if songList.avatar else None,
+            }
             audit = models.auditLog.objects.filter(id=songList.audit_id).first()
             if audit is not None:
                 auditResult = audit.get_audit_state_display()
                 auditContent = audit.msg_content
-                songList_data = {
-                    'id': songList.id,
-                    'name': songList.name,
-                    'description': songList.description,
-                    'number': songList.number,
-                    'support': songList.support,
-                    'is_upload': songList.is_upload,
-                    'audit_id': songList.audit_id,
-                    'uid': songList.uid,
-                    'avatar': songList.get_avatar_url() if songList.avatar else None,
-                    'auditResult': auditResult,
-                    'auditContent': auditContent,
-                }
-            else:
-               songList_data = {
-                   'id': songList.id,
-                   'name': songList.name,
-                   'description': songList.description,
-                   'number': songList.number,
-                   'support': songList.support,
-                   'is_upload': songList.is_upload,
-                   'audit_id': songList.audit_id,
-                   'uid': songList.uid,
-                   'avatar': songList.get_avatar_url() if songList.avatar else None,
-               }
+                songList_data.update({'auditResult': auditResult, 'auditContent': auditContent})
             return JsonResponse({'code': 200, 'songList': songList_data, 'msg': "success"})
 
 @csrf_exempt
@@ -177,5 +205,38 @@ def getListById(request):
     mids = models.listMusic.objects.filter(songList_id=sid, delete_mark=0).all().music_id
     musicList = []
     for mid in mids:
-        musicList.append(models.sysMusic.objects.filter(id=mid).first())
+        music = models.sysMusic.objects.filter(id=mid).first()
+        music_data = {
+            'id': music.id,
+            'name': music.name,
+            'singer': music.singer,
+            'description': music.description,
+            'avatar': music.get_avatar_url() if music.avatar else None,
+            'duration_time': music.duration_time.strftime('%H:%M:%S'),  # Convert TimeField to string
+            'support': music.support,
+            'mold': dict(music.choiceM)[music.mold],  # Get the readable choice label
+            'MD5': music.MD5,
+            'url': music.url,
+            'is_upload': dict(music.choiceU)[music.is_upload],  # Get the readable choice label
+            'audit_id': music.audit_id,
+            'delete_mark': dict(music.choiceD)[music.delete_mark],  # Get the readable choice label
+            'create_date': music.create_date.strftime('%Y-%m-%d'),
+            'upload_time': music.upload_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'pid': music.pid,
+            'uid': music.uid,
+        }
+        userName = parentName = auditorName = ""
+        if music.mold != 1:
+            userName = models.sysUser.objects.filter(id=music.uid, delete_mark=0).first().username
+            if music.mold == 3:
+                parentName = models.sysMusic.objects.filter(id=music.pid, delete_mark=0).first().name
+        if music.is_upload != 0:
+            userid = models.auditLog.objects.filter(id=music.audit_id, delete_mark=0).first().audit_id
+            if userid != 0:
+                # userid==0:未审核
+                auditorName = models.sysUser.objects.filter(id=userid, delete_mark=0).first().username
+        music_data["userName"] = userName
+        music_data['parentName'] = parentName
+        music_data['auditorName'] = auditorName
+        musicList.append(music_data)
     return JsonResponse({'code': 200, 'musicList': musicList, 'msg': "success"})
