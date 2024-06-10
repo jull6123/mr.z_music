@@ -48,14 +48,14 @@
             <!--        表格部分        -->
           <el-table :data="tableData" border stripe :header-cell-class-name="'headerBg'" style="margin-top: 20px;">
             <el-table-column prop="id" label="ID" width="80"></el-table-column>
-            <el-table-column prop="name" label="名称" width="140"></el-table-column>
+            <el-table-column prop="name" label="名称" width="200"></el-table-column>
             <el-table-column prop="type" label="类型"></el-table-column>
             <el-table-column prop="owner" label="所属者"></el-table-column>
             <el-table-column prop="audit_state_msg" label="审核状态"></el-table-column>
             <el-table-column label="操作" width="500" align="center">
               <template #default="scope">
-                <el-button v-if="searchDate.state === 'unAudited'" type="primary" @click="audit(scope.row)"> 审 核 <i class="el-icon-edit"></i></el-button>
-                <el-button v-if="searchDate.state === 'Audited'" type="success" @click="audit(scope.row)"> 查 看 <i class="el-icon-edit"></i></el-button>
+                <el-button v-if="searchDate.state === 'unAudited'" type="primary" @click="audit(scope.row, 'first')"> 审 核 <i class="el-icon-edit"></i></el-button>
+                <el-button v-if="searchDate.state === 'Audited'" type="success" @click="audit(scope.row, 'first')"> 查 看 <i class="el-icon-edit"></i></el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -67,27 +67,45 @@
               width="1000"
               align-center
           >
-            <el-card class="box-card" :style="{ height: '400px' }">
+<!--            歌曲信息-->
+            <el-card class="box-card" :style="{ height: '600px' }">
               <div slot="header" class="clearfix">
-                <h1 style="text-align: center">{{ form.name }}</h1>
+                <h1 style="text-align: center"> {{ form.name }} </h1>
               </div>
-              <div v-for="(value, key) in form" :key="key" class="text item">
+              <div v-for="(value, key) in form" :key="key" class="text item" style="margin-top: 7px;">
                 <template v-if="key !== 'id' && key !== 'avatar' && key !== 'url'
                                 && key !=='name' && key !== 'pid' && key !== 'uid'
                                 &&　key !== 'aid' && key !== 'type' && key !== 'content'">
-                  <span v-if="key !== 'userName'">{{ customKeys[key] }}:</span>
-                  <span v-else @click="handleUserNameClick(form.uid)">{{ customKeys[key] }}:</span>{{ value }}
+                  {{ customKeys[key] }} : {{ value }}
                 </template>
                 <template v-if="key === 'content'">
                   <span v-if="searchDate.state === 'Audited'">{{ customKeys[key] }}:</span>{{ value }}
                 </template>
               </div>
+<!--              歌曲播放卡片-->
+<!--              <el-card class="box-card" :style="{ height: '200px' }" style="margin-top: 100px">-->
+<!--                -->
+<!--              </el-card>-->
+
+              <!--            用户信息展示卡片-->
+              <el-card class="box-card" v-if="userClick === 'get'" :style="{ height: '200px' }" style="margin-top: 50px">
+                <div slot="header" class="clearfix">
+                  <h1 style="text-align: center"> --上传用户信息-- </h1>
+                </div>
+                <div v-for="(value, key) in user1" :key="key" class="text item">
+                  <template v-if="key !== 'id' && key !== 'avatar' && key !== 'role'
+                        && key !== 'delete_mark'">
+                    {{ customKeys[key] }}:{{ value }}
+                  </template>
+                </div>
+              </el-card>
             </el-card>
             <template #footer>
               <div class="dialog-footer" v-if="searchDate.state === 'unAudited'">
-                <el-button type="primary" v-if="form.uid !== 0 " @click="this.userNameDialogVisible = true">用户信息</el-button>
-                <el-button type="primary" @click="auditRuselt(form, 'success')">审核通过</el-button>
-                <el-button type="primary" @click="auditRuselt(form, 'failure')">不予通过</el-button>
+                <el-button type="primary" v-if="form.uid !== 0 && userClick !== 'get'" @click="handleUserNameClick(form.uid)">用户信息</el-button>
+                <el-button type="primary" @click="auditRuselt(form, 'success','music')">审核通过</el-button>
+                <el-button type="primary" @click="auditRuselt(form, 'failure','music')">不予通过</el-button>
+                <el-button type="success" @click="back('music')"> back </el-button>
               </div>
             </template>
           </el-dialog>
@@ -98,44 +116,55 @@
               width="1000"
               align-center
           >
-            <el-card class="box-card" :style="{ height: '400px' }">
+            <el-card class="box-card" >
               <div slot="header" class="clearfix">
                 <h1 style="text-align: center">{{ form.name }}</h1>
               </div>
-              <div v-for="(value, key) in form" :key="key" class="text item">
-                <template v-if="key !== 'id' && key !== 'avatar'
+              <div v-for="(value, key) in form" :key="key" class="text item" style="margin-top: 7px;">
+                <template v-if="key !== 'id' && key !== 'avatar'  && key !== 'uid'
                             &&　key !== 'aid' && key !== 'type'">
-                  <span v-if="key !== 'owner'">{{ customKeys[key] }}:</span>
-                  <span v-else @click="handleUserNameClick(form.uid)">{{ customKeys[key] }}:</span>{{ value }}
+                  {{ customKeys[key] }} : {{ value }}
                 </template>
               </div>
+              <el-card class="box-card"  style="margin-top: 100px;">
+                <div slot="header" class="clearfix">
+                  <h1 style="text-align: center">--歌 单 歌 曲--</h1>
+                </div>
+                <div>
+                  <el-table :data="allMusics" border stripe :header-cell-class-name="'headerBg'">
+                    <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                    <el-table-column prop="name" label="歌曲名" width="150"></el-table-column>
+                    <el-table-column prop="singer" label="歌手"></el-table-column>
+                    <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>
+                    <el-table-column prop="support" label="点赞数"></el-table-column>
+                    <el-table-column prop="mold" label="歌曲类型"></el-table-column>
+                    <el-table-column prop="parentName" label="衍生自"></el-table-column>
+                    <el-table-column prop="userName" label="所属者"></el-table-column>
+                    <el-table-column prop="auditorName" label="审核员"></el-table-column>
+                  </el-table>
+                </div>
+              </el-card>
+              <!--            用户信息展示卡片-->
+              <el-card class="box-card" v-if="userClick === 'get'" :style="{ height: '200px' }" style="margin-top: 50px">
+                <div slot="header" class="clearfix">
+                  <h1 style="text-align: center"> --上传用户信息-- </h1>
+                </div>
+                <div v-for="(value, key) in user1" :key="key" class="text item">
+                  <template v-if="key !== 'id' && key !== 'avatar' && key !== 'role'
+                        && key !== 'delete_mark'">
+                    {{ customKeys[key] }}:{{ value }}
+                  </template>
+                </div>
+              </el-card>
             </el-card>
             <template #footer>
-              <div class="dialog-footer">
-                <el-button type="primary" @click="getallMusics(form)">具体歌曲</el-button>
-                <el-button type="primary" v-if="searchDate.state === 'unAudited'" @click="auditRuselt(form, 'success')">审核通过</el-button>
-                <el-button type="primary" v-if="searchDate.state === 'unAudited'" @click="auditRuselt(form, 'failure')">不予通过</el-button>
-                <el-button type="success" @click="dialogFormVisibleS = false"> back </el-button>
+              <div class="dialog-footer" v-if="searchDate.state === 'unAudited'">
+                <el-button type="primary" v-if="userClick !== 'get'" @click="handleUserNameClick(form.uid)">用户信息</el-button>
+                <el-button type="primary"  @click="auditRuselt(form, 'success','songList')">审核通过</el-button>
+                <el-button type="primary"  @click="auditRuselt(form, 'failure','songList')">不予通过</el-button>
+                <el-button type="success" @click="back('songList')"> back </el-button>
               </div>
             </template>
-          </el-dialog>
-
-
-<!--          用户信息-->
-          <el-dialog
-              v-model="userNameDialogVisible"
-              title="用户信息"
-              width="1000"
-              align-center
-          >
-            <el-card class="box-card">
-              <div v-for="(value, key) in user1" :key="key" class="text item">
-                <template v-if="key !== 'id' && key !== 'avatar'
-                        && key !== 'delete_mark'">
-                  {{ customKeys[key] }}:{{ value }}
-                </template>
-              </div>
-            </el-card>
           </el-dialog>
 
 
@@ -160,32 +189,32 @@
           </el-dialog>
 
 
-<!--          歌单具体歌曲列表-->
-          <el-dialog
-              v-model="dialogFormVisibleSAll"
-              width="1000"
-              align-center
-          >
-            <el-card class="box-card" :style="{ height: '400px' }">
-              <div slot="header" class="clearfix">
-                <h1 style="text-align: center">--歌 单 歌 曲--</h1>
-              </div>
-              <div>
-                <el-table :data="allMusics" border stripe :header-cell-class-name="'headerBg'">
-                  <el-table-column prop="id" label="ID" width="80"></el-table-column>
-                  <el-table-column prop="name" label="歌曲名" width="140"></el-table-column>
-                  <el-table-column prop="singer" label="歌手"></el-table-column>
-                  <el-table-column prop="description" label="描述"></el-table-column>
-                  <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>
-                  <el-table-column prop="support" label="点赞数"></el-table-column>
-                  <el-table-column prop="mold" label="歌曲类型"></el-table-column>
-                  <el-table-column prop="parentName" label="衍生自"></el-table-column>
-                  <el-table-column prop="userName" label="所属者"></el-table-column>
-                  <el-table-column prop="auditorName" label="审核员"></el-table-column>
-                </el-table>
-              </div>
-            </el-card>
-          </el-dialog>
+<!--&lt;!&ndash;          歌单具体歌曲列表&ndash;&gt;-->
+<!--          <el-dialog-->
+<!--              v-model="dialogFormVisibleSAll"-->
+<!--              width="1000"-->
+<!--              align-center-->
+<!--          >-->
+<!--            <el-card class="box-card" :style="{ height: '400px' }">-->
+<!--              <div slot="header" class="clearfix">-->
+<!--                <h1 style="text-align: center">&#45;&#45;歌 单 歌 曲&#45;&#45;</h1>-->
+<!--              </div>-->
+<!--              <div>-->
+<!--                <el-table :data="allMusics" border stripe :header-cell-class-name="'headerBg'">-->
+<!--                  <el-table-column prop="id" label="ID" width="80"></el-table-column>-->
+<!--                  <el-table-column prop="name" label="歌曲名" width="200"></el-table-column>-->
+<!--                  <el-table-column prop="singer" label="歌手"></el-table-column>-->
+<!--                  <el-table-column prop="description" label="描述"></el-table-column>-->
+<!--                  <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>-->
+<!--                  <el-table-column prop="support" label="点赞数"></el-table-column>-->
+<!--                  <el-table-column prop="mold" label="歌曲类型"></el-table-column>-->
+<!--                  <el-table-column prop="parentName" label="衍生自"></el-table-column>-->
+<!--                  <el-table-column prop="userName" label="所属者"></el-table-column>-->
+<!--                  <el-table-column prop="auditorName" label="审核员"></el-table-column>-->
+<!--                </el-table>-->
+<!--              </div>-->
+<!--            </el-card>-->
+<!--          </el-dialog>-->
 
         </el-col>
         <el-col :span="4"></el-col>
@@ -213,15 +242,15 @@ export default {
       user:localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
       form:[],
       user1:[],
+      userClick: 'notGet',
       allMusics:[],
       content:'',
+      auditID:[],
       dialogFormVisibleS: false,
       dialogFormVisibleM: false,
-      userNameDialogVisible: false,
       contentDialogVisible: false,
       dialogFormVisibleSAll: false,
       searchDate:{
-        user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
         userId: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : 0,
         type: "music",
         state: "unAudited",
@@ -238,6 +267,7 @@ export default {
         email: '邮箱',
         create_time: '创建时间',
         content: '审核结果',
+        audit_state: '审核状态',
       }
     }
   },
@@ -278,7 +308,8 @@ export default {
     getEd(){
       this.searchDate.state = 'Audited'
     },
-    audit(row){
+    audit(row, type){
+      if (type === 'first')  this.auditID = row
       // 显示审核弹窗
       fetch('http://127.0.0.1:9001/audit/auditById/', {
         method: 'POST',
@@ -293,6 +324,7 @@ export default {
               if (row.type === "songList"){
                 this.form = data.songList
                 this.dialogFormVisibleS = true
+                this.getallMusics(data.songList)
               }else{
                 this.form = data.music
                 this.dialogFormVisibleM = true
@@ -309,6 +341,10 @@ export default {
       this.$message.success("退出成功")
     },
     handleUserNameClick(uid) {
+      this.userClick = this.userClick==='notGet'?'get':'notGet'
+      if (this.userClick === 'get') this.getUser(uid)
+    },
+    getUser(uid){
       const formData1 = new FormData();
       formData1.append('id', uid);
       formData1.append('type', "get")
@@ -320,7 +356,28 @@ export default {
           .then(data => {
             if (data.code === 200){
               this.user1 = data.user
-              this.userNameDialogVisible = true;
+            }
+            this.$notify({
+              title: data.msg
+            });
+          })
+    },
+    updateResult(user, form, content, state){
+      console.log(form)
+      fetch('http://127.0.0.1:9001/audit/auditResult/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({userId:user.id,aid:form.aid,type:form.type,content:content,state:state}),
+      })
+          .then(response => response.json())
+          .then(data => {
+            if (data.code === 200){
+              if  (form.type === 'songList') {
+                this.audit(this.auditID)
+              }
+              else if (form.type === 'music') this.load()
             }
             this.$notify({
               title: data.msg
@@ -328,38 +385,18 @@ export default {
           })
     },
     saveContent(content, result){
-      this.updateResult(this.user, this.form, content, 'failure')
+      this.updateResult(this.user, this.form, content, result)
+      this.contentDialogVisible = false
     },
-    auditRuselt(form, result){
+    auditRuselt(form, result,type){
       if (result == 'failure'){
         this.contentDialogVisible = true;
       }
-      else(
-          this.updateResult(this.user, this.form, 'success', 'success')
-      )
-    },
-    updateResult(user, form, content, state){
-      const data = {
-        userId:user.id,
-        aid: form.aid,
-        type:form.type,
-        content:content,
-        state:state,
+      else{
+        if (type === 'music')  this.dialogFormVisibleM = false
+        else if (type === 'songList') this.dialogFormVisibleS = false
+        this.updateResult(this.user, form, 'success', 'success')
       }
-      console.log(data)
-      fetch('http://127.0.0.1:9001/audit/auditResult/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-          .then(response => response.json())
-          .then(data => {
-            this.$notify({
-              title: data.msg
-            });
-          })
     },
     getallMusics(form){
       fetch('http://127.0.0.1:9001/getListById/', {
@@ -367,19 +404,24 @@ export default {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(form.iid),
+        body: JSON.stringify({sid:form.id}),
       })
           .then(response => response.json())
           .then(data => {
             if (data.code === 200){
-              this.dialogFormVisibleSAll = true;
+              // this.dialogFormVisibleSAll = true;
               this.allMusics = data.musicList
             }
             this.$notify({
               title: data.msg
             });
           })
-    }
+    },
+    back(type){
+      if (type==='songList') this.dialogFormVisibleS = false
+      else this.dialogFormVisibleM = false
+      this.load()
+    },
   }
 }
 </script>

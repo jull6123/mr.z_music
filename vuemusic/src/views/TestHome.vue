@@ -147,7 +147,7 @@
                 </div>
                 <el-table :data="songListHot" border stripe :header-cell-class-name="'headerBg'">
                   <el-table-column prop="name" label="名称" width="250"></el-table-column>
-                  <el-table-column prop="userName" label="所属者"></el-table-column>
+                  <el-table-column prop="owner" label="所属者"></el-table-column>
                   <el-table-column prop="number" label="歌曲数量"></el-table-column>
                   <el-table-column prop="support" label="点赞数"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
@@ -169,10 +169,19 @@
                   </div>
                   <div style="margin-top: 20px">
                     <div v-for="(value, key) in songListNow" :key="key" class="text item" style="text-align: center; margin-top: 10px">
-                      <template v-if="key !== 'id' && key !== 'avatar' && key !== 'is_upload' && key !== 'auditContent'
+                      <div v-if="songListNow.is_upload === 3">
+                        <template v-if="key !== 'id' && key !== 'avatar' && key !== 'is_upload' && key !== 'auditContent' && key !== 'is_upload_msg'
                           && key !== 'uid' && key !== 'audit_id' && key !== 'name' &&　key !== 'auditResult'">
-                        {{ customKeys[key] }} :  {{ value }}
-                      </template>
+                          {{ customKeys[key] }} :  {{ value }}
+                        </template>
+                      </div>
+                      <div v-if="songListNow.is_upload < 2">
+                        <template v-if="key !== 'id' && key !== 'avatar' && key !== 'is_upload' && key !== 'auditContent'
+                          && key !== 'uid' && key !== 'audit_id' && key !== 'name' &&　key !== 'auditResult'">
+                          {{ customKeys[key] }} :  {{ value }}
+                        </template>
+                      </div>
+
                     </div>
                   </div>
 
@@ -263,7 +272,7 @@
                 </div>
                 <el-table :data="songListCollect" border stripe :header-cell-class-name="'headerBg'">
                   <el-table-column prop="name" label="名称" width="250"></el-table-column>
-                  <el-table-column prop="userName" label="所属者"></el-table-column>
+                  <el-table-column prop="owner" label="所属者"></el-table-column>
                   <el-table-column prop="number" label="歌曲数量"></el-table-column>
                   <el-table-column prop="support" label="点赞数"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">

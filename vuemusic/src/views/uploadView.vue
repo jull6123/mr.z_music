@@ -154,7 +154,7 @@
               <h3 style="text-align: center">{{ forms.name }}</h3>
             </div>
             <div v-for="(value, key) in forms" :key="key" class="text item">
-              <template v-if="key !== 'id' && key !== 'avatar' && key !== 'audit_id'
+              <template v-if="key !== 'id' && key !== 'avatar' && key !== 'audit_id' && key !== 'msg'
                                  && key !== 'is_upload' && key !== 'uid' && key !== 'auditContent'
                                   && key !== 'support' && key !== 'auditResult'">
                 {{ customKeys[key] }}:{{ value }}
@@ -206,7 +206,7 @@ export default{
   data(){
     return{
       uploadMold: this.$route.query.uploadMold,
-      active: this.$route.query.mid && this.$route.query.mid!==0 ? 1 : 0,
+      active: 0,
       musicFile: '',
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
       form: {avatarUrl: ''},
@@ -233,6 +233,7 @@ export default{
         number: '歌曲数量',
         avatar: '头像',
         mold_msg: '类型',
+        is_upload_msg: '上传状态',
       }
     }
   },

@@ -37,6 +37,7 @@ def serSongList(request):
                 'audit_id': songList.audit_id,
                 'uid': songList.uid,
                 'avatar': songList.get_avatar_url() if songList.avatar else None,
+                'owner': models.sysUser.objects.filter(id=songList.uid).first().username,
             }
             if songList.is_upload > 1:
                 audit = models.auditLog.objects.filter(id=songList.audit_id, delete_mark=0).first()
@@ -65,6 +66,7 @@ def getsongAll(list, songLists):
             'is_upload_msg': dict(songList.choiceU)[songList.is_upload],
             'audit_id': songList.audit_id,
             'uid': songList.uid,
+            'owner': models.sysUser.objects.filter(id=songList.uid).first().username,
             'avatar': songList.get_avatar_url() if songList.avatar else None,
         }
         if songList.is_upload > 1:
@@ -223,14 +225,17 @@ def supportSongList(request):
     songList.save()
     return JsonResponse({'code': 200, 'msg': "success"})
 
-
+@csrf_exempt
 def collectSongList(request):
     # 传参songList的id+user 收藏歌单 add_listUser
     data = json.loads(request.body)
     sid = data.get('sid')
     userId = data.get('userId')
-    models.listUser.objects.create(user_id=userId, songList_id=sid)
-    return JsonResponse({'code': 200, 'msg': "success"})
+    list = models.listUser.objects.filter(user_id=userId, songList_id=sid, delete_mark=0).first()
+    if list is None:
+        models.listUser.objects.create(user_id=userId, songList_id=sid)
+        return JsonResponse({'code': 200, 'msg': "success"})
+    return JsonResponse({'code': 504, 'msg': "该歌单已收藏"})
 
 @csrf_exempt
 def getFormById(request):
