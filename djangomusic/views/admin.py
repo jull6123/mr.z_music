@@ -78,7 +78,7 @@ def serMusicList(request):
             'singer': music.singer,
             'description': music.description,
             'avatar': music.get_avatar_url() if music.avatar else None,
-            'duration_time': music.duration_time.strftime('%H:%M:%S'),  # Convert TimeField to string
+            'duration_time': seconds_to_hms(music.duration_seconds),
             'support': music.support,
             'mold': dict(music.choiceM)[music.mold],  # Get the readable choice label
             'MD5': music.MD5,
@@ -158,7 +158,7 @@ def delById(request):
     data = json.loads(request.body)
     type = data.get('getType', None)
     id = data.get('id', None)
-    print(type,id)
+    print(type, id)
     # 删除用户
     if type == 'user':
         user = models.sysUser.objects.filter(id=id, delete_mark=0).first()
@@ -207,6 +207,8 @@ def delById(request):
         listMusic = models.listMusic.objects.filter(music_id=id, songList_id=sid, delete_mark=0).first()
         if listMusic is None:
             return JsonResponse({'code': 501, 'msg': "该歌曲已不再歌单中"})
+        listMusic.delete_mark = 1
+        listMusic.save()
         return JsonResponse({'code': 200, 'msg': "success"})
 
 @csrf_exempt
@@ -238,3 +240,43 @@ def supportById(request):
         music.support += 1
         music.save()
         return JsonResponse({'code': 200, 'msg': "success"})
+
+@csrf_exempt
+def upload(request):
+    # 传参songList的id 上传歌单 is_upload=1,add_auditLog,audit_id=id
+    data = json.loads(request.body)
+    type = data.get('type')
+    id = data.get('id')
+    if type == 'music':
+        music = models.sysMusic.objects.filter(id=id, delete_mark=0).first()
+        if music is None:
+            return JsonResponse({'code': 501, 'msg': "歌曲不存在"})
+        audit = models.auditLog.objects.filter(music_id=id, audit_mold=0, delete_mark=0).first()
+        if audit is None:
+            audits = models.auditLog.objects.create(music_id=id, audit_mold=0)
+        else:
+            return JsonResponse({'code': 501, 'msg': "歌曲已上传"})
+        music.is_upload = 1
+        music.audit_id = audits.id
+        music.save()
+        return JsonResponse({'code': 200, 'msg': "success"})
+    songList = models.songList.objects.filter(id=id, delete_mark=0).first()
+    if songList is None:
+        return JsonResponse({'code': 501, 'msg': "歌单不存在"})
+    audits = models.auditLog.objects.filter(songList_id=songList.id, audit_mold=1, delete_mark=0).first()
+    if audits is None:
+        audit = models.auditLog.objects.create(songList_id=id, audit_mold=1)
+        print(audit)
+    else:
+        return JsonResponse({'code': 501, 'msg': "歌单已上传"})
+    songList.is_upload = 1
+    songList.audit_id = audit.id
+    songList.save()
+    return JsonResponse({'code': 200, 'msg': "success"})
+
+
+def seconds_to_hms(seconds):
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"

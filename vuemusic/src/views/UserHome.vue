@@ -10,27 +10,27 @@
           <div  type="text" @click="songMusicB" style="margin-top: 20px">正在播放</div>
         </el-col>
         <el-col :span="1" style="text-align: center"
-                :class="[getType==='recommend' && 'grid-content bg-purple']">
+                :class="[getType==='recommend' && 'grid-content bg-black-dark']">
           <div type="text" @click="recommendB" style="margin-top: 20px"> 推 荐 </div>
         </el-col>
         <el-col :span="1" style="text-align: center"
-                :class="[getType==='search' && 'grid-content bg-purple']">
+                :class="[getType==='search' && 'grid-content bg-black-dark']">
           <div type="text" @click="searchB" style="margin-top: 20px">搜 索</div>
         </el-col>
         <el-col :span="2" style="text-align: center"
-                :class="[getType==='songList' && 'grid-content bg-purple']">
+                :class="[getType==='songList' && 'grid-content bg-black-dark']">
           <div type="text" @click="songListB" style="margin-top: 20px">我的歌单</div>
         </el-col>
         <el-col :span="2" style="text-align: center"
-                :class="[getType==='listened' && 'grid-content bg-purple']">
+                :class="[getType==='listened' && 'grid-content bg-black-dark']">
           <div type="text" @click="listenedB" style="margin-top: 20px">我听过的</div>
         </el-col>
         <el-col :span="2" style="text-align: center"
-                :class="[getType==='ai' && 'grid-content bg-purple']">
+                :class="[getType==='ai' && 'grid-content bg-black-dark']">
           <div type="text" @click="aiB" style="margin-top: 20px">AI生成</div>
         </el-col>
         <el-col :span="2" style="text-align: center"
-                :class="[getType==='upload' && 'grid-content bg-purple']">
+                :class="[getType==='upload' && 'grid-content bg-black-dark']">
           <div type="text" @click="$router.push({path: '/uploadPost', query: {uploadMold: 'music'}})" style="margin-top: 20px">上传歌曲</div>
         </el-col>
         <el-col :span="3"></el-col>

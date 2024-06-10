@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-row style="margin-top: 10px; font-size: 18px; color:azure;">
+    <el-row style="margin-top: 10px; font-size: 18px; color:black;">
       <span style="margin-left: 80px;">歌曲</span>
       <span style="margin-left: 950px;">歌手</span>
       <span style="margin-left: 180px;">时长</span>
@@ -8,9 +8,9 @@
         <li class="musiclist" style="margin-top: 10px;"></li>
         <li v-for="obj in Music" :key="obj.Id" class="musiclist">
           <el-button style="width: 1300px;background: rgba(0,0,0,0);height: 60px;cursor: default;" text @dblclick="PlayMusic(obj.Id)">
-           <span style="left:90px;position:fixed;color:azure;font-size: 16px; opacity: 100%;">{{ obj.MusicName }}</span>
-           <span style="left: 1070px;position:fixed; color:azure;font-size: 16px;opacity: 100%;">{{ obj.Singer }}</span>
-           <span style="left: 1290px;position:fixed; color:azure;font-size: 16px;opacity: 100%;">{{ obj.Time }}</span>
+           <span style="left:90px;position:fixed;color:black;font-size: 16px; opacity: 100%;">{{ obj.MusicName }}</span>
+           <span style="left: 1070px;position:fixed; color:black;font-size: 16px;opacity: 100%;">{{ obj.Singer }}</span>
+           <span style="left: 1290px;position:fixed; color:black;font-size: 16px;opacity: 100%;">{{ obj.Time }}</span>
           </el-button>
         </li>
   </div>
@@ -144,7 +144,7 @@
 .musiclist{
   margin-bottom: 0px;
   margin-top: 0px;
-  border-bottom: 1px solid #575454;
+  border-bottom: 1px solid #0f1e40;
   margin-left: 70px;
   width: 1250px;
   list-style: none;

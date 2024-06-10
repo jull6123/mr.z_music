@@ -84,7 +84,7 @@ class sysMusic(models.Model):
     singer = models.CharField(max_length=20, verbose_name="歌手")
     description = models.TextField(null=True, blank=True, verbose_name="音乐描述")
     avatar = models.ImageField(null=True, blank=True, upload_to='avater', verbose_name="歌曲图片展示")
-    duration_time = models.TimeField(verbose_name="歌曲时长")
+    duration_seconds = models.IntegerField(default=0, verbose_name="歌曲时长（秒）")
     support = models.IntegerField(default=0, verbose_name="点赞数")
     choiceM = (
         (1, "网络音乐"),
