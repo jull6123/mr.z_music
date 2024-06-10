@@ -96,9 +96,9 @@ WSGI_APPLICATION = "newdemo.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "csmusic",
+        "NAME": "shenmolu",
         "USER": "root",
-        "PASSWORD": "Zyx1540@#",
+        "PASSWORD": "Shawujiang9645@",
         "HOST": "127.0.0.1",
         # "USER": "cs",
         # "PASSWORD": "Cs01",
