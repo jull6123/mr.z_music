@@ -46,7 +46,6 @@ class MusicModelForm(forms.ModelForm):
 
 def musicAdd(request):
     uid = request.GET.get('nid')
-    print(uid)
     if request.method == "GET":
         return render(request, 'music/musicAdd.html', {"nid": request.GET.get('nid'), "error_msg": ""})
     if request.FILES['file']:
@@ -57,8 +56,6 @@ def musicAdd(request):
         description = request.POST['description']
         size = uploaded_file.size / 1024  # Converting bytes to KB
         md5 = calculate_md5(uploaded_file)
-        print(name, types, mold, description, size, uid)
-        print(md5)
         # 先通过MD5与uid查找是否该用户已上传过此文件
         obj = models.sysmusic.objects.filter(MD5=md5, uid=uid).first()
         # 已存在该文件
@@ -109,7 +106,6 @@ def musicList(request):
     # nid为登录的用户的id
     nid = request.GET.get("nid")
     user = models.sysuser.objects.filter(id=nid).first()
-    print(nid, user)
     # role==1 表示为用户，查看该登录用户的所有音乐
     if user.role:
         music_list = models.sysmusic.objects.filter(is_delete=False, uid=nid).order_by('create_time')

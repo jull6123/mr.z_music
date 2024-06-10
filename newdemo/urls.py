@@ -138,6 +138,8 @@ urlpatterns = [
     # 管理员端
     path('serUserList/', admin.serUserList),
     path('delById/', admin.delById),
+    path('delAll/', admin.delAll),
+    path('editRole/', admin.editRole),
     path('supportById/', admin.supportById),
     path('upload/', admin.upload),
     path('serMusicList/', admin.serMusicList),

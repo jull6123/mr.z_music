@@ -16,7 +16,6 @@ def login(request):
     data = json.loads(request.body)
     username = data.get('username')
     password = data.get('password')
-    print(username, password)
     user = models.sysUser.objects.filter(username=username, password=password)
     if user is None or len(user) == 0 or len(user) > 1:
         return JsonResponse({'code': 501, 'msg': "账号或密码错误"})

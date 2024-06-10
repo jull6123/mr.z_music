@@ -20,7 +20,6 @@ def login(request):
 def register(request):
     if request.method == "GET":
         return render(request, "register.html")
-    print(request.POST)
     username = request.POST.get("user")
     password = request.POST.get("pwd")
     email = request.POST.get("email")
@@ -39,9 +38,7 @@ def person(request):
     nid = request.GET.get("nid")
     if request.method == "GET":
         row_data = models.sysuser.objects.filter(id=nid).first()
-        print(row_data)
         return render(request, 'lay/person.html', {'row_data': row_data})
-    print(request.POST)
     desc = request.POST.get("desc")
     models.sysuser.objects.filter(id=nid).update(description=desc)
     queryset = models.sysuser.objects.filter(id=nid).first()
@@ -52,7 +49,6 @@ def update(request):
     nid = request.GET.get("nid")
     if request.method == "GET":
         row_data = models.sysuser.objects.filter(id=nid).first()
-        print(row_data)
         return render(request, 'lay/update.html', {'row_data': row_data})
     print(request.POST)
     oldpassword = request.POST.get("oldpwd")

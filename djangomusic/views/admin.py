@@ -280,3 +280,36 @@ def seconds_to_hms(seconds):
     minutes = (seconds % 3600) // 60
     seconds = seconds % 60
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+
+@csrf_exempt
+def delAll(request):
+    data = json.loads(request.body)
+    type = data.get('type')
+    if type == 'musicDel':
+        models.sysMusic.objects.filter(delete_mark=1).delete()
+        return JsonResponse({'code': 200, 'msg': "success"})
+    if type == 'songListDel':
+        models.sysMusic.objects.filter(delete_mark=1).delete()
+        return JsonResponse({'code': 200, 'msg': "success"})
+    if type == 'userDel':
+        models.sysMusic.objects.filter(delete_mark=1).delete()
+        return JsonResponse({'code': 200, 'msg': "success"})
+    return JsonResponse({'code': 507, 'msg': "未知错误"})
+
+@csrf_exempt
+def editRole(request):
+    data = json.loads(request.body)
+    type = data.get('roleType')
+    uid = data.get('uid')
+    user = models.sysUser.objects.filter(id=uid,delete_mark=0).first()
+    if user is None:
+        return JsonResponse({'code': 501, 'msg': "该用户不存在"})
+    if type == 'audit':
+        user.role = 2
+        user.save()
+        return JsonResponse({'code': 200, 'msg': "success"})
+    elif type == 'admin':
+        user.role = 1
+        user.save()
+        return JsonResponse({'code': 200, 'msg': "success"})

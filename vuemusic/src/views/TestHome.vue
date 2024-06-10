@@ -113,14 +113,19 @@
                   <el-table-column prop="is_upload_msg" label="审核状态"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
+<!--                      均可播放-->
                       <el-button type="primary" @click="display(scope.row)"> 播 放 </el-button>
+<!--                      未上传可修改，上传，，其他只可查看-->
                       <el-button type="success" v-if="scope.row.is_upload !== 0" @click="openUploadView('had', 'music', scope.row.id)"> 查 看 </el-button>
                       <el-button type="success" v-if="scope.row.is_upload === 0" @click="openUploadView('had', 'music', scope.row.id)"> 修 改 </el-button>
                       <el-button type="success" v-if="scope.row.is_upload === 0" @click="upload('music',  scope.row)"> 上 传 </el-button>
+<!--                      上传成功的-->
                       <el-button type="success" v-if="scope.row.is_upload === 3" @click="comment(scope.row)"> 评 论 </el-button>
-                      <el-button type="success" v-if="scope.row.is_upload === 1" @click="press"> 催 办 </el-button>
                       <el-button type="success" v-if="scope.row.is_upload === 3" @click="add(scope.row)"> 添加至 我的歌单 </el-button>
-                      <el-button type="success" v-if="scope.row.is_upload === 0 || scope.row.is_upload === 3" @click="delAnyById('music', scope.row.id)"> 删 除 </el-button>
+<!--                      审核中的可催办-->
+                      <el-button type="success" v-if="scope.row.is_upload === 1" @click="press"> 催 办 </el-button>
+<!--                     除审核中的均可删除-->
+                      <el-button type="success" v-if="scope.row.is_upload !==　2" @click="delAnyById('music', scope.row.id)"> 删 除 </el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -256,11 +261,11 @@
                   <el-table-column prop="auditContent" label="审核结果"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button type="primary" @click="getSongMusic(scope.row)"> 播放并查看 </el-button>
+                      <el-button type="primary" v-if="scope.row.is_upload !== 2" @click="getSongMusic(scope.row)"> 播放并查看 </el-button>
                       <el-button type="primary" v-if="scope.row.is_upload === 1" @click="press"> 催 办 </el-button>
                       <el-button type="primary" v-if="scope.row.is_upload === 0" @click="openUploadView('had', 'songList', scope.row.id)"> 修 改 </el-button>
                       <el-button type="primary" v-if="scope.row.is_upload === 0" @click="upload('songList', scope.row)"> 上 传 </el-button>
-                      <el-button type="primary" v-if="scope.row.is_upload === 0" @click="delAnyById('mine', scope.row.id)"> 删 除 </el-button>
+                      <el-button type="primary" v-if="scope.row.is_upload === 0 || scope.row.is_upload === 2" @click="delAnyById('mine', scope.row.id)"> 删 除 </el-button>
                     </template>
                   </el-table-column>
                 </el-table>

@@ -24,21 +24,6 @@
             <el-col :span="1" style="text-align: center">
               <div type="text" style="margin-top: 12px" @click="logout"> 退 出 </div>
             </el-col>
-<!--            <el-col :span="4" style="text-align: center">-->
-<!--              <el-dropdown style="width: 150px; cursor: pointer; text-align: right; margin-top: 12px">-->
-<!--                <div style="display: inline-block">-->
-<!--                  <span>{{ user.username }}</span><i class="el-icon-arrow-down" style="margin-left: 5px"></i>-->
-<!--                </div>-->
-<!--                <el-dropdown-menu slot="dropdown" style="width: 100px; text-align: center">-->
-<!--                  <el-dropdown-item style="font-size: 14px; padding: 5px 0">-->
-<!--                    <router-link to="/person" style="text-decoration: none">个人信息</router-link>-->
-<!--                  </el-dropdown-item>-->
-<!--                  <el-dropdown-item style="font-size: 14px; padding: 5px 0">-->
-<!--                    <span style="text-decoration: none" @click="logout">退出</span>-->
-<!--                  </el-dropdown-item>-->
-<!--                </el-dropdown-menu>-->
-<!--              </el-dropdown>-->
-<!--            </el-col>-->
             <el-col :span="4"></el-col>
           </el-row>
         </el-header>
@@ -67,6 +52,7 @@
 
                   <el-button class="ml-5" type="primary" @click="userController">搜索</el-button>
                   <el-button type="warning" @click="resetU">重置</el-button>
+                  <el-button type="danger" @click="delAll('userDel')">清空已删除</el-button>
                 </div>
 
                 <div style="margin: 10px 0"  v-if="getType==='music'">
@@ -98,6 +84,7 @@
                   </el-select>
                   <el-button class="ml-5" type="primary" @click="musicController">搜索</el-button>
                   <el-button type="warning" @click="resetM">重置</el-button>
+                  <el-button type="danger" @click="delAll('songListDel')">清空已删除</el-button>
                 </div>
 
                 <div style="margin: 10px 0"  v-if="getType==='songList'">
@@ -123,14 +110,13 @@
                   </el-select>
                   <el-button class="ml-5" type="primary" @click="songListController">搜索</el-button>
                   <el-button type="warning" @click="resetS">重置</el-button>
+                  <el-button type="danger" @click="delAll('musicDel')">清空已删除</el-button>
                 </div>
 
 
                 <!--        表格部分        -->
                 <el-table :data="userList" border stripe :header-cell-class-name="'headerBg'"
                           v-if="getType==='user'">
-<!--                          @selection-change="handleSelectionChange" -->
-<!--                  <el-table-column type="selection" width="55"></el-table-column>-->
                   <el-table-column prop="id" label="ID" width="80"></el-table-column>
                   <el-table-column prop="username" label="用户名" width="140"></el-table-column>
                   <el-table-column prop="role" label="角色"></el-table-column>
@@ -138,17 +124,12 @@
                   <el-table-column prop="description" label="描述"></el-table-column>
                   <el-table-column prop="create_time" label="创建时间"></el-table-column>
                   <el-table-column prop="delete_mark" label="删除标志"></el-table-column>
-<!--                  <el-table-column label="操作" width="500" align="center">-->
-<!--                    <template slot-scope="scope">-->
-<!--                      <el-button type="primary" @click="lookMusicById(scope.row.id)"-->
-<!--                                 >查看用户所有歌曲 <i class="el-icon-document"></i>-->
-<!--                      </el-button>-->
-<!--                      <el-button type="warning" @click="lookSongListById(scope.row.id)"-->
-<!--                                 >查看用户所有歌单 <i class="el-icon-document"></i>-->
-<!--                      </el-button>-->
-<!--                      <el-button type="success" @click="handleEdit(scope.row)">查 看 <i class="el-icon-edit"></i></el-button>-->
-<!--                    </template>-->
-<!--                  </el-table-column>-->
+                  <el-table-column label="操作" width="500" align="center">
+                    <template #default="scope">
+                      <el-button type="primary" @click="edit(scope.row.id,'audit')"> 修改为审核员 </el-button>
+                      <el-button type="primary" @click="edit(scope.row.id,'admin')"> 修改为管理员 </el-button>
+                    </template>
+                  </el-table-column>
                 </el-table>
 
                 <el-table :data="musicList" border stripe :header-cell-class-name="'headerBg'"
@@ -215,9 +196,6 @@ export default {
       },
       getType: 'user',
     }
-  },
-  computed: {
-
   },
   created() {
     this.userController()
@@ -308,6 +286,46 @@ export default {
       localStorage.removeItem("user")
       this.$router.push("/")
       this.$message.success("退出成功")
+    },
+    delAll(type){
+      fetch('http://127.0.0.1:9001/delAll/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({type:type}),
+      })
+          .then(response => response.json())
+          .then(data => {
+            if (data.code === 200){
+              if (this.getType === 'user') this.userController()
+              else if (this.getType === 'music') this.musicController()
+              else if (this.getType === 'songList') this.songListController()
+            }
+            this.$notify({
+              title: data.msg
+            });
+          })
+    },
+    edit(uid,roleType){
+      fetch('http://127.0.0.1:9001/editRole/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({type:roleType,uid:uid}),
+      })
+          .then(response => response.json())
+          .then(data => {
+            if (data.code === 200){
+              if (this.getType === 'user') this.userController()
+              else if (this.getType === 'music') this.musicController()
+              else if (this.getType === 'songList') this.songListController()
+            }
+            this.$notify({
+              title: data.msg
+            });
+          })
     },
   }
 }
