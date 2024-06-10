@@ -49,7 +49,7 @@ const router = createRouter({
     {
       path: '/home',
       name: 'home',
-      component: () => import('../views/TestHome.vue')
+      component: () => import('../views/UserHome.vue')
     },
     {
       path: '/uploadPost',
