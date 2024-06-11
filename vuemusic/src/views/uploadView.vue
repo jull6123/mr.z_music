@@ -454,10 +454,10 @@ export default{
       this.active++
       setTimeout(() => {
       }, 1000);
-      this.$router.push({path: '/home', query: {where: this.where}})
+      this.$router.push({path: '/userhome', query: {where: this.where}})
     },
     backS(){
-      this.$router.push({path: '/home', query: {where: this.where}})
+      this.$router.push({path: '/userhome', query: {where: this.where}})
     },
     press(){
       this.$notify({
