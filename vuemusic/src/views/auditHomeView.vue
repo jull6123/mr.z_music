@@ -8,7 +8,6 @@
         <el-col :span="2" style="text-align: center" class="grid-content bg-purple-dark"><div style="margin-top: 12px">审核管理</div></el-col>
         <el-col :span="2" style="text-align: center"
                 :class="[searchDate.state==='unAudited' && 'grid-content bg-purple']">
-<!--          <div  type="text" @click="getUn" style="margin-top: 12px">待完成</div>-->
           <el-dropdown trigger="click">
             <div class="el-dropdown-link mx-1" size="large" type="text" @click="getUn" style="margin-top: 12px">待完成<el-icon class="el-icon--right"><arrow-down /></el-icon></div>
             <template #dropdown>
@@ -69,10 +68,12 @@
               align-center
           >
 <!--            歌曲信息-->
-            <el-card class="box-card" :style="{ height: '600px' }">
+            <el-card class="box-card" :style="{ height: '800px' }">
               <div slot="header" class="clearfix">
                 <h1 style="text-align: center"> {{ form.name }} </h1>
               </div>
+
+              <img v-if="form.avatar" :src="form.avatar" alt="Avatar" style="max-width: 200px;margin-left: 20px;">
               <div v-for="(value, key) in form" :key="key" class="text item" style="margin-top: 7px;">
                 <template v-if="key !== 'id' && key !== 'avatar' && key !== 'url'
                                 && key !=='name' && key !== 'pid' && key !== 'uid'
@@ -83,16 +84,19 @@
                   <span v-if="searchDate.state === 'Audited'">{{ customKeys[key] }}:</span>{{ value }}
                 </template>
               </div>
-<!--              歌曲播放卡片-->
-<!--              <el-card class="box-card" :style="{ height: '200px' }" style="margin-top: 100px">-->
-<!--                -->
-<!--              </el-card>-->
-
+              <!--                歌曲播放-->
+              <el-card class="box-card" :style="{ height: '100px' }">
+                <audio controls >
+                  <source :src="form.url" type="audio/mpeg">
+                  Your browser does not support the audio element.
+                </audio>
+              </el-card>
               <!--            用户信息展示卡片-->
-              <el-card class="box-card" v-if="userClick === 'get'" :style="{ height: '200px' }" style="margin-top: 50px">
+              <el-card class="box-card" v-if="userClick === 'get'" :style="{ height: '400px' }" style="margin-top: 50px">
                 <div slot="header" class="clearfix">
                   <h1 style="text-align: center"> --上传用户信息-- </h1>
                 </div>
+                <img v-if="user1.avatar" :src="user1.avatar" alt="Avatar" style="max-width: 200px;margin-left: 20px;">
                 <div v-for="(value, key) in user1" :key="key" class="text item">
                   <template v-if="key !== 'id' && key !== 'avatar' && key !== 'role'
                         && key !== 'delete_mark'">
@@ -121,6 +125,7 @@
               <div slot="header" class="clearfix">
                 <h1 style="text-align: center">{{ form.name }}</h1>
               </div>
+              <img v-if="form.avatar" :src="form.avatar" alt="Avatar" style="max-width: 200px;margin-left: 20px;">
               <div v-for="(value, key) in form" :key="key" class="text item" style="margin-top: 7px;">
                 <template v-if="key !== 'id' && key !== 'avatar'  && key !== 'uid'
                             &&　key !== 'aid' && key !== 'type'">
@@ -146,10 +151,11 @@
                 </div>
               </el-card>
               <!--            用户信息展示卡片-->
-              <el-card class="box-card" v-if="userClick === 'get'" :style="{ height: '200px' }" style="margin-top: 50px">
+              <el-card class="box-card" v-if="userClick === 'get'" :style="{ height: '300px' }" style="margin-top: 50px">
                 <div slot="header" class="clearfix">
                   <h1 style="text-align: center"> --上传用户信息-- </h1>
                 </div>
+                <img v-if="user1.avatar" :src="user1.avatar" alt="Avatar" style="max-width: 200px;margin-left: 20px;">
                 <div v-for="(value, key) in user1" :key="key" class="text item">
                   <template v-if="key !== 'id' && key !== 'avatar' && key !== 'role'
                         && key !== 'delete_mark'">
@@ -188,34 +194,6 @@
               </div>
             </template>
           </el-dialog>
-
-
-<!--&lt;!&ndash;          歌单具体歌曲列表&ndash;&gt;-->
-<!--          <el-dialog-->
-<!--              v-model="dialogFormVisibleSAll"-->
-<!--              width="1000"-->
-<!--              align-center-->
-<!--          >-->
-<!--            <el-card class="box-card" :style="{ height: '400px' }">-->
-<!--              <div slot="header" class="clearfix">-->
-<!--                <h1 style="text-align: center">&#45;&#45;歌 单 歌 曲&#45;&#45;</h1>-->
-<!--              </div>-->
-<!--              <div>-->
-<!--                <el-table :data="allMusics" border stripe :header-cell-class-name="'headerBg'">-->
-<!--                  <el-table-column prop="id" label="ID" width="80"></el-table-column>-->
-<!--                  <el-table-column prop="name" label="歌曲名" width="200"></el-table-column>-->
-<!--                  <el-table-column prop="singer" label="歌手"></el-table-column>-->
-<!--                  <el-table-column prop="description" label="描述"></el-table-column>-->
-<!--                  <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>-->
-<!--                  <el-table-column prop="support" label="点赞数"></el-table-column>-->
-<!--                  <el-table-column prop="mold" label="歌曲类型"></el-table-column>-->
-<!--                  <el-table-column prop="parentName" label="衍生自"></el-table-column>-->
-<!--                  <el-table-column prop="userName" label="所属者"></el-table-column>-->
-<!--                  <el-table-column prop="auditorName" label="审核员"></el-table-column>-->
-<!--                </el-table>-->
-<!--              </div>-->
-<!--            </el-card>-->
-<!--          </el-dialog>-->
 
         </el-col>
         <el-col :span="4"></el-col>

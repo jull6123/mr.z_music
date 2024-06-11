@@ -14,8 +14,12 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.views.static import serve
+
 from djangomusic.views import basicFuction, song, songList, comment, audit, admin
-from django.urls import path
+from django.urls import path, re_path
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
 
@@ -146,9 +150,6 @@ urlpatterns = [
     path('serSongLists/', admin.serSongLists),
 
 ]
-
-from django.conf import settings
-from django.conf.urls.static import static
 
 # 在开发环境中，为媒体文件配置 URL
 if settings.DEBUG:

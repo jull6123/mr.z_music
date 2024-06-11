@@ -56,8 +56,9 @@
             <div slot="header" class="clearfix">
               <h3 style="text-align: center">{{ form.name }}</h3>
             </div>
+            <img v-if="form.avatar" :src="form.avatarUrl" alt="Avatar" style="max-width: 200px;">
             <div v-for="(value, key) in form" :key="key" class="text item" style="margin-top: 5px">
-              <template v-if="key !== 'id' && key !== 'avatar' && key !== 'support' && key !== 'uid' && key !== 'mold'
+              <template v-if="key !== 'id' && key !== 'avatar' && key !== 'support' && key !== 'uid' && key !== 'mold'  && key !== 'avatarUrl'
                                  && key !== 'is_upload' && key !== 'url' && key !== 'auditContent'  && key !== 'msg'
                                   &&　key !== 'audit_id' && key !== 'pid' && key !== 'auditResult' && key !== 'duration_seconds'">
                 {{ customKeys[key] }} :   {{ value }}
@@ -153,8 +154,9 @@
             <div slot="header" class="clearfix">
               <h3 style="text-align: center">{{ forms.name }}</h3>
             </div>
+            <img v-if="forms.avatar" :src="forms.avatarUrl" alt="Avatar" style="max-width: 200px;">
             <div v-for="(value, key) in forms" :key="key" class="text item">
-              <template v-if="key !== 'id' && key !== 'avatar' && key !== 'audit_id' && key !== 'msg'
+              <template v-if="key !== 'id' && key !== 'avatar' && key !== 'audit_id' && key !== 'msg' && key !== 'avatarUrl'
                                  && key !== 'is_upload' && key !== 'uid' && key !== 'auditContent'
                                   && key !== 'support' && key !== 'auditResult'">
                 {{ customKeys[key] }}:{{ value }}
@@ -164,7 +166,7 @@
               <el-card v-if="forms.is_upload === 0">
                 <div style="padding-top: 10px;">
                   <el-button type="primary" @click="upload('singList',forms.id)"> 上 传 </el-button>
-                  <el-button type="primary" @click="back"> 返 回 </el-button>
+                  <el-button type="primary" @click="backS"> 返 回 </el-button>
                 </div>
               </el-card>
               <el-card v-if="forms.is_upload > 1">

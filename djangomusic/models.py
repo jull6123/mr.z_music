@@ -1,7 +1,7 @@
-from datetime import timezone
 
+from django.utils import timezone
 from django.db import models
-MEDIA_ADDR = "http://localhost:9091/media/"
+MEDIA_ADDR = "http://localhost:9001/media/"
 
 class sysUser(models.Model):
     username = models.CharField(max_length=20, verbose_name="用户名")

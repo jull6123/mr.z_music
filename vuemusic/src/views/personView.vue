@@ -4,19 +4,9 @@
       <el-col :span="6"></el-col>
       <el-col :span="12">
         <el-card style="margin-top: 20px">
-<!--          <img v-if="form.avatar && !showPasswordFormItem" :src="form.avatarUrl" alt="Avatar" style="max-width: 200px;">-->
-<!--          <input type="file" v-if="!showPasswordFormItem" @change="handleFileChange">-->
-<!--          <el-image :src="user.avatar" fit="cover" alt="User Avatar" style="width: 100px; height: 100px;"></el-image>-->
+          <img v-if="form.avatar && !showPasswordFormItem" fit="cover" :src="imageUrl" alt="Avatar" style="max-width: 200px;">
+          <input type="file" v-if="!showPasswordFormItem" @change="handleFileChange">
 
-          <!--    <el-upload-->
-          <!--        class="avatar-uploader"-->
-          <!--        :action="'http://localhost:9091/'"-->
-          <!--        :show-file-list="false"-->
-          <!--        :on-success="handleAvatarSuccess"-->
-          <!--    >-->
-          <!--      <img v-if="form.avatar  && !showPasswordFormItem" :src="form.avatar" class="avatar">-->
-          <!--      <i v-else class="el-icon-plus avatar-uploader-icon"></i>-->
-          <!--    </el-upload>-->
           <el-form label-width="80px" size="small" style="margin-top: 20px;">
             <el-form-item label="用户名">
               <el-input v-model="form.username" disabled autocomplete="off"></el-input>
@@ -68,7 +58,7 @@ export default {
       message: "修改密码",
       showPasswordFormItem: false,
       form: {},
-      userAvatar:'',
+      imageUrl:'',
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
       uid: this.$route.query.uid,
       rules: {
@@ -87,20 +77,6 @@ export default {
       }
     }
   },
-  // mounted() {
-  //   // 假设用户数据存储在变量user中，user.avatar包含了头像的路径
-  //   const userAvatarPath = this.user.avatar; // http://localhost:9091/media/avatars/1/3.jpg
-  //   const frontendBaseUrl = 'http://localhost:5174/';
-  //   const relativeAvatarPath = userAvatarPath.replace('http://localhost:9091', ''); // 将头像路径中的绝对地址替换为相对地址
-  //   this.userAvatar = frontendBaseUrl + relativeAvatarPath;
-  // },
-  // mounted() {
-  //   const storedAvatarUrl = ''
-  //   showAvater(storedAvatarUrl, avatarUrl)
-  //   if (storedAvatarUrl) {
-  //     this.form.avatarUrl = storedAvatarUrl;
-  //   }
-  // },
   created() {
     if(this.uid !== 0)
       this.load()
@@ -121,10 +97,7 @@ export default {
           .then(data => {
             if (data.code === 200){
               this.form = data.user
-              const storedAvatarUrl = data.user.avatar;
-              if (storedAvatarUrl) {
-                this.form.avatarUrl = storedAvatarUrl;
-              }
+              this.imageUrl = this.form.avatar
             }
             this.$notify({
               title: data.msg
@@ -133,7 +106,7 @@ export default {
     },
     handleFileChange(event) {
       this.form.avatar = event.target.files[0];
-      this.form.avatarUrl = URL.createObjectURL(this.form.avatar);
+      this.imageUrl = URL.createObjectURL(this.form.avatar);
     },
     togglePasswordFormItem() {
       if(this.showPasswordFormItem === true){
