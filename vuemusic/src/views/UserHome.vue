@@ -3,6 +3,22 @@
 <template>
   <el-container>
     <el-header>
+      <el-row class="grid-content bg-black-light audio"></el-row>
+
+      <div class="audio audioControler">
+          <audio controls :src="MusicUrl" style="width: 1150px" autoplay></audio>
+      </div>
+      <div style="left: 50px" class="audio audioButton">
+        <el-button style="width: 60px;height: 40px;">
+          <el-icon><ArrowLeftBold /></el-icon>
+        </el-button>
+      </div>
+      <div class="audio audioButton" style="left: 150px;">
+        <el-button style="width: 60px;height: 40px;">
+          <el-icon size="large"><ArrowRightBold /></el-icon>
+        </el-button>
+      </div>
+
       <el-row class="grid-content bg-black-light head-button" :gutter="16">
         <el-col :span="3"></el-col>
         <el-col :span="3" style="text-align: center" class="grid-content"><div style="margin-top: 16px;font-size: 28px">音你心动</div></el-col>
@@ -50,7 +66,7 @@
         <el-col :span="3"></el-col>
       </el-row>
     </el-header>
-    <el-main>
+    <el-main style="z-index: 1">
       <el-row :gutter="20">
         <el-col :span="3"></el-col>
         <el-col :span="18" class="grid-contents bg-purple-light">
@@ -93,7 +109,7 @@
                   <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button type="primary" @click="display(scope.row)"> 播 放 </el-button>
+                      <el-button type="primary" @click="display(scope.row);display2(scope.row.url)"> 播 放 </el-button>
                       <el-button type="primary" @click="like(scope.row,'music')"> 点 赞 </el-button>
                       <el-button type="success" @click="comment(scope.row)"> 评 论 </el-button>
                       <el-button type="success" @click="add(scope.row)"> 添加至 我的歌单 </el-button>
@@ -487,64 +503,67 @@ import { mapMutations } from 'vuex';
 import photo1 from '@/assets/image/hotsongBD.png';
 import photo2 from '@/assets/image/newsongBD.png';
 import photo3 from '@/assets/image/aisongBD.png';
+import axios from 'axios';
 export default {
   name: "adminHomeView",
   data() {
     return {
-      user:localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
+      MusicUrl:'',
+      currentIndex:'',
+      user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
       getType: this.$route.query.where ? this.$route.query.where : 'home', //home songMusic recommend search songList listened ai upload
 
       // 推荐
-      nameBD:'',
-      dialogFormVisibleBD:false, //榜单dialog
+      nameBD: '',
+      dialogFormVisibleBD: false, //榜单dialog
       photos: [
-        { id: 1, url: photo1 },
-        { id: 2, url: photo2 },
-        { id: 3, url: photo3 }
+        {id: 1, url: photo1},
+        {id: 2, url: photo2},
+        {id: 3, url: photo3}
       ],
-      hotMusic:[], //热歌榜歌曲
-      newMusic:[], //新歌榜歌曲
-      aiMusic:[], //ai歌曲榜
-      songListHot:[], //热歌榜歌单
+      hotMusic: [], //热歌榜歌曲
+      newMusic: [], //新歌榜歌曲
+      aiMusic: [], //ai歌曲榜
+      songListHot: [], //热歌榜歌单
 
       // 搜索
-      searchData:{
+      searchData: {
         userId: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")).id : 0,
-        type:'search',
-        serName:'',
-        serSName:'',
+        type: 'search',
+        serName: '',
+        serSName: '',
       },
-      musicListAll:[], //全部的已上传的歌曲列表/搜索的歌曲列表
-      mymusicALL:[], //我的歌曲列表
+      musicListAll: [], //全部的已上传的歌曲列表/搜索的歌曲列表
+      mymusicALL: [], //我的歌曲列表
 
       // 正在播放
-      toType:'music',
-      displayMusics:[],
-      songListNow:[],//正在播放的歌单
-      songMusicList:[], // 正在播放的歌单的歌曲列表
+      toType: 'music',
+      displayMusics: [],
+      songListNow: [],//正在播放的歌单
+      songMusicList: [], // 正在播放的歌单的歌曲列表
 
       // 我的歌单
-      songListMine:[], //我的歌单
-      songListCollect:[], //收藏歌单
+      songListMine: [], //我的歌单
+      songListCollect: [], //收藏歌单
 
       // 我听过的歌曲列表
-      musicListened:[],
+      musicListened: [],
 
       // 评论 热门+最新
-      dialogFormVisibleC:false, //评论区dialog
-      musicCom:[], //打开评论区的歌曲
-      commentHot:[], //热门评论
-      commentNew:[], //最新评论
-      contentDialogVisible:false, //新增评论dialog
-      commentId:0,
-      content:'', //评论内容
+      dialogFormVisibleC: false, //评论区dialog
+      musicCom: [], //打开评论区的歌曲
+      commentHot: [], //热门评论
+      commentNew: [], //最新评论
+      contentDialogVisible: false, //新增评论dialog
+      commentId: 0,
+      content: '', //评论内容
 
       //向我的歌单添加歌曲
-      musicToList:'', //歌曲本身数据
-      dialogVisibleToList:false, //添加我的歌单dialog
+      musicToList: '', //歌曲本身数据
+      dialogVisibleToList: false, //添加我的歌单dialog
 
       // key的修改
-      customKeys:{
+      customKeys: {
         name: '名称',
         description: '描述',
         owner: '所属者',
@@ -572,10 +591,10 @@ export default {
     this.load()
   },
   methods: {
-    getMusics(type){
+    getMusics(type) {
       const data = {
         type: type,
-        serName:this.getType==='search'?this.searchData.serName:'',
+        serName: this.getType === 'search' ? this.searchData.serName : '',
         userId: this.user.id,
       }
       fetch('http://127.0.0.1:9001/serMusic/', {
@@ -587,8 +606,8 @@ export default {
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
-              if (type === 'hot')  this.hotMusic  = data.musicList
+            if (data.code === 200) {
+              if (type === 'hot') this.hotMusic = data.musicList
               else if (type === 'new') this.newMusic = data.musicList
               else if (type === 'ai') this.aiMusic = data.musicList
               else if (type === 'search') this.musicListAll = data.musicList
@@ -599,11 +618,11 @@ export default {
             });
           })
     },
-    getSongLists(type){
+    getSongLists(type) {
       const data = {
-        type:type,
+        type: type,
         userId: this.user.id,
-        serSName: this.getType==='songList'?this.searchData.serSName:'',
+        serSName: this.getType === 'songList' ? this.searchData.serSName : '',
       }
       fetch('http://127.0.0.1:9001/serSongList/', {
         method: 'POST',
@@ -614,11 +633,11 @@ export default {
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
-              if (type === 'get'){
-                this.songListMine  = data.listMine
+            if (data.code === 200) {
+              if (type === 'get') {
+                this.songListMine = data.listMine
                 this.songListCollect = data.listCollect
-              }else if (type === 'hot')
+              } else if (type === 'hot')
                 this.songListHot = data.listHot
             }
             this.$notify({
@@ -626,17 +645,17 @@ export default {
             });
           })
     },
-    getListenedById(){
+    getListenedById() {
       fetch('http://127.0.0.1:9001/listHistoryById/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({userId:this.user.id}),
+        body: JSON.stringify({userId: this.user.id}),
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
+            if (data.code === 200) {
               this.musicListened = data.musicList
             }
             this.$notify({
@@ -645,58 +664,58 @@ export default {
           })
     },
     goToDetail(id) {
-      this.nameBD=id===1 ? "热歌榜": (id===2 ? "新歌榜" : "AI榜")
-      const type=this.nameBD === "热歌榜" ? 'hot' : (this.nameBD === "新歌榜" ? 'new' : 'ai')
+      this.nameBD = id === 1 ? "热歌榜" : (id === 2 ? "新歌榜" : "AI榜")
+      const type = this.nameBD === "热歌榜" ? 'hot' : (this.nameBD === "新歌榜" ? 'new' : 'ai')
       this.getMusics(type)
       this.dialogFormVisibleBD = true
     },
-    load(){
+    load() {
       this.getMusics('hot')
       this.getSongLists('get')
-      if (this.getType === 'search'){
+      if (this.getType === 'search') {
         this.getMusics('search')
         this.getMusics('mine')
       }
     },
-    songMusicB(){
+    songMusicB() {
       this.getType = 'songMusic'
     },
-    recommendB(){
+    recommendB() {
       this.getType = 'recommend'
       this.getSongLists('hot')
     },
-    searchB(){
+    searchB() {
       this.getType = 'search'
       this.getMusics('search')
       this.getMusics('mine')
     },
-    songListB(){
+    songListB() {
       this.getType = 'songList'
       this.getSongLists('get')
     },
-    listenedB(){
+    listenedB() {
       this.getType = 'listened'
       this.getListenedById()
     },
-    aiB(){
+    aiB() {
       this.getType = 'ai'
     },
-    search(){
+    search() {
       if (this.getType === 'search') {
         this.searchB()
-      }
-      else {
+      } else {
         this.songListB()
       }
     },
-    reset(){
-    //   搜索重置
+    reset() {
+      //   搜索重置
       this.searchData.serName = ''
       this.searchData.serSName = ''
       this.search()
     },
-    display(row){
+    display(row) {
       let existingRow = this.displayMusics.find(item => item.id === row.id);
+      this.currentIndex = row.id;
       if (!existingRow) {
         if (this.displayMusics.length >= 15) {
           this.displayMusics.shift();
@@ -706,38 +725,42 @@ export default {
       } else {
         existingRow.number++;
       }
-
-      //   添加播放记录至"我听过的"
-      fetch('http://127.0.0.1:9001/song/listenedMusic/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({mid:row.id, userId:this.user.id}),
-      })
-          .then(response => response.json())
-          .then(data => {
-            if (data.code === 200){
-              this.getListenedById()
-            }
-            this.$notify({
-              title: data.msg
-            });
+          //   添加播放记录至"我听过的"
+          fetch('http://127.0.0.1:9001/song/listenedMusic/', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({mid: row.id, userId: this.user.id}),
           })
+              .then(response => response.json())
+              .then(data => {
+                if (data.code === 200) {
+                  this.getListenedById()
+                }
+                this.$notify({
+                  title: data.msg
+                });
+              })
     },
-    comment(row){
-    //   评论歌曲
+    display2(MusicRrl)
+    {
+      this.MusicUrl = MusicRrl;
+      this.$refs.audioplayer.play();
+    },
+    comment(row) {
+      //   评论歌曲
       this.musicCom = row
       fetch('http://127.0.0.1:9001/getComments/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({musicId:row.id}),
+        body: JSON.stringify({musicId: row.id}),
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
+            if (data.code === 200) {
               this.commentHot = data.commentListHot
               this.commentNew = data.commentListNew
               this.dialogFormVisibleC = true
@@ -747,18 +770,18 @@ export default {
             });
           })
     },
-    opencomment(cid){
+    opencomment(cid) {
       this.contentDialogVisible = true
       this.content = ''
       this.commentId = cid
     },
-    addcomment(content){
+    addcomment(content) {
       //   新增评论
-      const data={
-        mid:this.musicCom.id,
-        userId:this.user.id,
-        content:content,
-        pid:this.commentId,
+      const data = {
+        mid: this.musicCom.id,
+        userId: this.user.id,
+        content: content,
+        pid: this.commentId,
       }
       fetch('http://127.0.0.1:9001/comment/addComment/', {
         method: 'POST',
@@ -769,7 +792,7 @@ export default {
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
+            if (data.code === 200) {
               this.contentDialogVisible = false
               this.comment(this.musicCom)
             }
@@ -778,55 +801,55 @@ export default {
             });
           })
     },
-    getSongMusic(row){
-    //   歌单的点击播放并查看
+    getSongMusic(row) {
+      //   歌单的点击播放并查看
       this.toType = 'songList'
       this.getType = 'songMusic'
       this.getsongListFrom(row.id)
       this.getsongMusicList(row.id)
     },
-    getsongListFrom(id){
+    getsongListFrom(id) {
       fetch('http://127.0.0.1:9001/getFormById/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({sid:id}),
+        body: JSON.stringify({sid: id}),
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
+            if (data.code === 200) {
               this.songListNow = data.songList
             }
           })
     },
-    getsongMusicList(id){
+    getsongMusicList(id) {
       fetch('http://127.0.0.1:9001/getListById/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({sid:id}),
+        body: JSON.stringify({sid: id}),
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
+            if (data.code === 200) {
               this.songMusicList = data.musicList
             }
           })
     },
-    collect(row){
-    //   收藏歌单
+    collect(row) {
+      //   收藏歌单
       fetch('http://127.0.0.1:9001/songList/collectSongList/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({sid:row.id, userId:this.user.id}),
+        body: JSON.stringify({sid: row.id, userId: this.user.id}),
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
+            if (data.code === 200) {
               this.songMusicList = data.musicList
             }
             this.$notify({
@@ -834,18 +857,18 @@ export default {
             });
           })
     },
-    emptyListened(){
-    //   清空我听过的历史
+    emptyListened() {
+      //   清空我听过的历史
       fetch('http://127.0.0.1:9001/clearHistoryById/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({userId:this.user.id}),
+        body: JSON.stringify({userId: this.user.id}),
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
+            if (data.code === 200) {
               this.getListenedById()
             }
             this.$notify({
@@ -853,46 +876,45 @@ export default {
             });
           })
     },
-    add(row){
-    //   添加至我的歌单  弹框
+    add(row) {
+      //   添加至我的歌单  弹框
       this.musicToList = row
       this.dialogVisibleToList = true
     },
-    addTo(sid){
+    addTo(sid) {
       fetch('http://127.0.0.1:9001/song/collectMusicToList/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({mid:this.musicToList.id, sid:sid}),
+        body: JSON.stringify({mid: this.musicToList.id, sid: sid}),
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
-              this.songListMine  = data.songList
+            if (data.code === 200) {
+              this.songListMine = data.songList
             }
             this.$notify({
               title: data.msg
             });
           })
     },
-    upload(type,row){
+    upload(type, row) {
       fetch('http://127.0.0.1:9001/upload/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({type:type, id:row.id}),
+        body: JSON.stringify({type: type, id: row.id}),
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
-              if(type === 'music') {
+            if (data.code === 200) {
+              if (type === 'music') {
                 this.search()
-              }
-              else if (type === 'songList'){
-                if (this.getType === 'songList')  this.getSongLists('get')
-                else if (this.getType === 'songMusic')  this.getsongListFrom(row.id)
+              } else if (type === 'songList') {
+                if (this.getType === 'songList') this.getSongLists('get')
+                else if (this.getType === 'songMusic') this.getsongListFrom(row.id)
               }
             }
             this.$notify({
@@ -900,19 +922,19 @@ export default {
             });
           })
     },
-    like(row,type){
+    like(row, type) {
       //   点赞歌曲
       fetch('http://127.0.0.1:9001/supportById/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({type:type, id:row.id}),
+        body: JSON.stringify({type: type, id: row.id}),
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
-              if (this.getType === 'search' && type === 'music')  this.searchB()
+            if (data.code === 200) {
+              if (this.getType === 'search' && type === 'music') this.searchB()
               else if (type === 'comment') this.comment(this.musicCom)
               else if (this.getType !== 'recommend' && type === 'songList') this.getsongListFrom(this.songListNow.id)
               else if (this.getType === 'songMusic' && type === 'music') this.getsongMusicList(this.songListNow.id)
@@ -924,12 +946,12 @@ export default {
             });
           })
     },
-    delAnyById(type, id){
+    delAnyById(type, id) {
       const data = {
         getType: type,
-        id:id,
-        userId:this.user.id,
-        sid:this.songListNow.id,
+        id: id,
+        userId: this.user.id,
+        sid: this.songListNow.id,
       }
       fetch('http://127.0.0.1:9001/delById/', {
         method: 'POST',
@@ -940,7 +962,7 @@ export default {
       })
           .then(response => response.json())
           .then(data => {
-            if (data.code === 200){
+            if (data.code === 200) {
               if (type === 'comment') this.comment(this.musicCom)
               if (type === 'music' && this.getType === 'search') this.search()
               if (type === 'mine' || type === 'collect') this.getSongLists('get')
@@ -951,20 +973,25 @@ export default {
             });
           })
     },
-    openUploadView(type, mold, id){
+    openUploadView(type, mold, id) {
       if (type === 'new') {
         this.$router.push({path: '/uploadPost', query: {uploadMold: mold, where: this.getType}})
-      }
-      else if (type === 'had'){
-        if (mold == 'songList') this.$router.push({path: '/uploadPost', query: {uploadMold: mold, sid: id, where: this.getType}})
-        else if (mold === 'music') this.$router.push({path: '/uploadPost', query: {uploadMold: mold, mid: id, where: this.getType}})
+      } else if (type === 'had') {
+        if (mold == 'songList') this.$router.push({
+          path: '/uploadPost',
+          query: {uploadMold: mold, sid: id, where: this.getType}
+        })
+        else if (mold === 'music') this.$router.push({
+          path: '/uploadPost',
+          query: {uploadMold: mold, mid: id, where: this.getType}
+        })
       }
     },
-    press(){
+    press() {
       this.$notify({
         title: "已催办，等耐心等待哦~~"
       });
-    }
+    },
   }
 }
 </script>
@@ -1025,5 +1052,21 @@ export default {
 .photo-img {
   width: 120px; /* 设置图片宽度 */
   height: 120px; /* 设置图片高度 */
+}
+.audio{
+  position: fixed;
+  top: 790px;
+  width: 1700px;
+  height: 150px;
+  z-index: 2;
+}
+.audioControler{
+  left: 250px;
+  width: 1150px;
+}
+.audioButton{
+  top: 800px;
+  width: 100px;
+  height: 100px;
 }
 </style>

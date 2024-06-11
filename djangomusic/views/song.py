@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from djangomusic import models
+from djangomusic.models import sysMusic
 from newdemo import settings
 
 @csrf_exempt
@@ -231,7 +232,6 @@ def getMusic(mid):
             'msg': 'success',
         }
     return music_data
-
 
 def createMusic(request):
     # 传参源music的id 生成ai
