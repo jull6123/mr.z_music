@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from django.db import models
 MEDIA_ADDR = "http://localhost:9091/media/"
 
@@ -56,8 +58,15 @@ class songList(models.Model):
     )
     delete_mark = models.IntegerField(choices=choiceD, default=0, verbose_name="删除标志,0:未删,1:已删")
     create_date = models.DateField(auto_now_add=True, verbose_name="创建时间")
-    upload_date = models.DateField(auto_now=True, verbose_name="上传时间")
+    upload_date = models.DateField(null=True, blank=True, verbose_name="上传时间")
     uid = models.IntegerField(verbose_name="歌单创建用户id")
+
+    def upload_successful(self):
+        self.upload_date = timezone.now().date()
+        self.save()
+
+    def like(self):
+        self.save(update_fields=['support'])
 
     def to_dict(self):
         return {
@@ -108,9 +117,19 @@ class sysMusic(models.Model):
     )
     delete_mark = models.IntegerField(choices=choiceD, default=0, verbose_name="删除标志,0:未删,1:已删")
     create_date = models.DateField(auto_now_add=True, verbose_name="创建时间")
-    upload_time = models.DateTimeField(auto_now=True, verbose_name="上传时间，新歌榜需针对上传时间进行排序")
+    upload_time = models.DateTimeField(null=True, blank=True, verbose_name="上传时间，新歌榜需针对上传时间进行排序")
     pid = models.IntegerField(default=0, verbose_name="针对AI音频，记录源音频id")
     uid = models.IntegerField(default=0, verbose_name="针对AI音频，记录创建用户id")
+
+    # 其他字段...
+
+    def upload_successful(self):
+        self.upload_success_time = timezone.now()
+        self.save()
+
+    def like(self):
+        self.support += 1
+        self.save(update_fields=['support'])
 
 
     def to_dict(self):

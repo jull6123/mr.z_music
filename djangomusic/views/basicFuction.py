@@ -96,7 +96,7 @@ def updateperson(request):
                 with open(avatar_path, 'wb') as f:
                     for chunk in avatar.chunks():
                         f.write(chunk)
-                user.avatar = 'avatars/{}/{}'.format(uid, avatar.name)
+                user.avatar = 'avatars/user/{}/{}'.format(uid, avatar.name)
 
             # Save music info to database
             user.description = description

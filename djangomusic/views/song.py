@@ -65,7 +65,7 @@ def serMusic(request):
                                                    is_upload=3, delete_mark=0).order_by('-upload_time').all()
     elif type == 'mine':
         musicList = models.sysMusic.objects.filter(name__icontains=serName, singer__icontains=serName, uid=userId,
-                                                    delete_mark=0).order_by('-upload_time').all()
+                                                    delete_mark=0).order_by('-upload_time', '-create_date', 'mold').all()
     elif type == 'hot':
         musicList = models.sysMusic.objects.filter(is_upload=3, delete_mark=0).order_by('-support').all()[:10]
     elif type == 'new':

@@ -1,9 +1,12 @@
 import json
+import os
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from djangomusic import models
+from newdemo import settings
+
 
 @csrf_exempt
 def serUserList(request):
@@ -229,16 +232,14 @@ def supportById(request):
         songList = models.songList.objects.filter(id=id, delete_mark=0).first()
         if songList is None:
             return JsonResponse({'code': 501, 'msg': "该歌单不存在"})
-        songList.support += 1
-        songList.save()
+        songList.like()
         return JsonResponse({'code': 200, 'msg': "success"})
     # 点赞歌曲
     elif type == 'music':
         music = models.sysMusic.objects.filter(id=id, delete_mark=0).first()
         if music is None:
             return JsonResponse({'code': 501, 'msg': "该音乐不存在"})
-        music.support += 1
-        music.save()
+        music.like()
         return JsonResponse({'code': 200, 'msg': "success"})
 
 @csrf_exempt
@@ -284,16 +285,66 @@ def seconds_to_hms(seconds):
 
 @csrf_exempt
 def delAll(request):
+    # 删除已删除的数据及相应的文件
     data = json.loads(request.body)
     type = data.get('type')
+    print('--------------------------------')
     if type == 'musicDel':
-        models.sysMusic.objects.filter(delete_mark=1).delete()
+        musics = models.sysMusic.objects.filter(delete_mark=1).all()
+        for music in musics:
+            # 删图片
+            if music.avatar:
+                original_avatar_path = music.avatar.path
+                if os.path.exists(original_avatar_path):
+                    os.remove(original_avatar_path)
+                avatar_directory = os.path.join(settings.MEDIA_ROOT, 'avatars/music', str(music.id))
+                if os.path.exists(avatar_directory) and not os.listdir(avatar_directory):
+                    os.rmdir(avatar_directory)
+            music_file_path = os.path.join(settings.MEDIA_ROOT, 'music')
+            file_path = os.path.join(music_file_path, music.MD5 + '.mp3')
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            if os.path.exists(music_file_path) and not os.listdir(music_file_path):
+                os.rmdir(music_file_path)
+            # 删除相关数据
+            models.sysComment.objects.filter(music_id=music.id).delete()
+            models.listMusic.objects.filter(music_id=music.id).delete()
+            music.delete()
         return JsonResponse({'code': 200, 'msg': "success"})
     if type == 'songListDel':
-        models.sysMusic.objects.filter(delete_mark=1).delete()
+        songLists = models.songList.objects.filter(delete_mark=1)
+        for songList in songLists:
+            if songList.avatar:
+                original_avatar_path = songList.avatar.path
+                print(original_avatar_path)
+                if os.path.exists(original_avatar_path):
+                    os.remove(original_avatar_path)
+                avatar_directory = os.path.join(settings.MEDIA_ROOT, 'avatars', 'songList', str(songList.id))
+                if os.path.exists(avatar_directory) and not os.listdir(avatar_directory):
+                    os.rmdir(avatar_directory)
+            # 删除相关数据
+            models.listUser.objects.filter(songList_id=songList.id).delete()
+            models.listMusic.objects.filter(songList_id=songList.id).delete()
+            songList.delete()
         return JsonResponse({'code': 200, 'msg': "success"})
     if type == 'userDel':
-        models.sysMusic.objects.filter(delete_mark=1).delete()
+        users = models.sysMusic.objects.filter(delete_mark=1).all()
+        for user in users:
+            if user.avatar:
+                original_avatar_path = user.avatar.path
+                print(original_avatar_path)
+                if os.path.exists(original_avatar_path):
+                    os.remove(original_avatar_path)
+                avatar_directory = os.path.join(settings.MEDIA_ROOT, 'avatars','user', str(user.id))
+                if os.path.exists(avatar_directory) and not os.listdir(avatar_directory):
+                    os.rmdir(avatar_directory)
+            # 删除相关数据 对应的歌曲歌单更新，统一进行文件的删除
+            models.userMusic.objects.filter(user_id=user.id).delete()
+            models.sysMusic.objects.filter(uid=user.id).update(delete_mark=1)
+            models.sysComment.objects.filter(user_id=user.id).delete()
+            models.songList.objects.filter(user_id=user.id).update(delete_mark=1)
+            models.listUser.objects.filter(user_id=user.id).delete()
+            user.delete()
         return JsonResponse({'code': 200, 'msg': "success"})
     return JsonResponse({'code': 507, 'msg': "未知错误"})
 
@@ -302,7 +353,7 @@ def editRole(request):
     data = json.loads(request.body)
     type = data.get('roleType')
     uid = data.get('uid')
-    user = models.sysUser.objects.filter(id=uid,delete_mark=0).first()
+    user = models.sysUser.objects.filter(id=uid, delete_mark=0).first()
     if user is None:
         return JsonResponse({'code': 501, 'msg': "该用户不存在"})
     if type == 'audit':

@@ -84,7 +84,7 @@
                   </el-select>
                   <el-button class="ml-5" type="primary" @click="musicController">搜索</el-button>
                   <el-button type="warning" @click="resetM">重置</el-button>
-                  <el-button type="danger" @click="delAll('songListDel')">清空已删除</el-button>
+                  <el-button type="danger" @click="delAll('musicDel')">清空已删除</el-button>
                 </div>
 
                 <div style="margin: 10px 0"  v-if="getType==='songList'">
@@ -110,7 +110,7 @@
                   </el-select>
                   <el-button class="ml-5" type="primary" @click="songListController">搜索</el-button>
                   <el-button type="warning" @click="resetS">重置</el-button>
-                  <el-button type="danger" @click="delAll('musicDel')">清空已删除</el-button>
+                  <el-button type="danger" @click="delAll('songListDel')">清空已删除</el-button>
                 </div>
 
 
@@ -137,13 +137,13 @@
                   <el-table-column prop="id" label="ID" width="80"></el-table-column>
                   <el-table-column prop="name" label="歌曲名" width="140"></el-table-column>
                   <el-table-column prop="singer" label="歌手"></el-table-column>
-                  <el-table-column prop="description" label="描述"></el-table-column>
                   <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>
                   <el-table-column prop="support" label="点赞数"></el-table-column>
                   <el-table-column prop="mold" label="歌曲类型"></el-table-column>
-                  <el-table-column prop="is_upload" label="上传阶段"></el-table-column>
+                  <el-table-column prop="is_upload" label="上传阶段" width="200"></el-table-column>
                   <el-table-column prop="parentName" label="衍生自"></el-table-column>
                   <el-table-column prop="userName" label="所属者"></el-table-column>
+                  <el-table-column prop="delete_mark" label="删除标志"></el-table-column>
                 </el-table>
 
                 <el-table :data="songLists" border stripe :header-cell-class-name="'headerBg'"
@@ -155,6 +155,7 @@
                   <el-table-column prop="support" label="点赞数量"></el-table-column>
                   <el-table-column prop="is_upload" label="上传阶段"></el-table-column>
                   <el-table-column prop="userName" label="所属者"></el-table-column>
+                  <el-table-column prop="delete_mark" label="删除标志"></el-table-column>
                 </el-table>
               </div>
             </el-col>

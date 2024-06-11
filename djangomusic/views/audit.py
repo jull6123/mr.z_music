@@ -1,4 +1,5 @@
 import json
+from datetime import timezone
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -172,27 +173,20 @@ def auditResult(request):
     else:
         stateInt = 4
     content = data.get('content')
-    print("-------------------------")
-    print(state, stateInt)
     audit = models.auditLog.objects.filter(id=aid, delete_mark=0).first()
     if audit is None:
         return JsonResponse({'code': 501, 'msg': "该审核不存在"})
-    print(audit)
     audit.audit_state = stateInt
-    print(audit.audit_state)
     audit.msg_content = content
-    print(audit.msg_content)
     audit.audit_id = userId
-    print(audit.audit_id)
     audit.save()
-
 
     if type == "songList":
         songList = models.songList.objects.filter(id=audit.songList_id, delete_mark=0).first()
         if songList is None:
             return JsonResponse({'code': 501, 'msg': "所审核的歌单已删除"})
         songList.is_upload = stateInt-1
-        songList.save()
+        songList.upload_successful()
         return JsonResponse({'code': 200, 'msg': "success"})
     music = models.sysMusic.objects.filter(id=audit.music_id, delete_mark=0).first()
     if music is None:
@@ -200,5 +194,5 @@ def auditResult(request):
     music.is_upload = stateInt-1
     if music.mold == 1:
         music.uid = 0
-    music.save()
+    music.upload_successful()
     return JsonResponse({'code': 200, 'msg': "success"})
