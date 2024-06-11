@@ -91,7 +91,6 @@ def addSongList(request):
                 songList = models.songList.objects.create(name=name, description=description, uid=userId)
             else:
                 songList = models.songList.objects.filter(id=sid, delete_mark=0).first()
-            songListId = songList.id
             if request.FILES.get('avatar'):
                 avatar = request.FILES['avatar']
                 # Save avatar file
