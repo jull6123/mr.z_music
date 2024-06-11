@@ -91,6 +91,13 @@
                   <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
+                      <!--                歌曲播放-->
+                      <el-card class="box-card" :style="{ height: '90px' }" style="margin-bottom: 7px">
+                        <audio controls >
+                          <source :src="scope.row.url" type="audio/mpeg">
+                          Your browser does not support the audio element.
+                        </audio>
+                      </el-card>
                       <el-button type="primary" @click="display(scope.row)"> 播 放 </el-button>
                       <el-button type="primary" @click="like(scope.row,'music')"> 点 赞 </el-button>
                       <el-button type="success" @click="comment(scope.row)"> 评 论 </el-button>
@@ -173,6 +180,7 @@
                     <h1 style="text-align: center">歌 单 ：  {{ songListNow.name }}</h1>
                   </div>
                   <div style="margin-top: 20px">
+                    <img v-if="songListNow.avatar" :src="songListNow.avatar" alt="Avatar" style="max-width: 200px;margin-left: 700px;">
                     <div v-for="(value, key) in songListNow" :key="key" class="text item" style="text-align: center; margin-top: 10px">
                       <div v-if="songListNow.is_upload === 3">
                         <template v-if="key !== 'id' && key !== 'avatar' && key !== 'is_upload' && key !== 'auditContent' && key !== 'is_upload_msg'
@@ -564,7 +572,7 @@ export default {
   computed: {
     selectedData() {
       return this.nameBD === "热歌榜" ? this.hotMusic : (this.nameBD === "新歌榜" ? this.newMusic : this.aiMusic);
-    }
+    },
   },
   created() {
     this.load()
@@ -694,6 +702,7 @@ export default {
       this.search()
     },
     display(row){
+
       let existingRow = this.displayMusics.find(item => item.id === row.id);
       if (!existingRow) {
         if (this.displayMusics.length >= 15) {

@@ -91,11 +91,10 @@ def addSongList(request):
                 songList = models.songList.objects.create(name=name, description=description, uid=userId)
             else:
                 songList = models.songList.objects.filter(id=sid, delete_mark=0).first()
-            songListId = songList.id
             if request.FILES.get('avatar'):
                 avatar = request.FILES['avatar']
                 # Save avatar file
-                avatar_directory = os.path.join(settings.MEDIA_ROOT, 'avatars/songList', sid)
+                avatar_directory = os.path.join(settings.MEDIA_ROOT, 'avatars/songList', str(songList.id))
                 print(avatar_directory)
                 if not os.path.exists(avatar_directory):
                     os.makedirs(avatar_directory)
@@ -111,7 +110,7 @@ def addSongList(request):
                 with open(avatar_path, 'wb') as f:
                     for chunk in avatar.chunks():
                         f.write(chunk)
-                songList.avatar = 'avatars/songList/{}/{}'.format(songListId, avatar.name)
+                songList.avatar = 'avatars/songList/{}/{}'.format(songList.id, avatar.name)
             # Save music info to database
             if sid != '0':
                 songList.name = name

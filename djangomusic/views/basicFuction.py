@@ -116,6 +116,9 @@ def updateperson(request):
         else:
             if user is None:
                 return JsonResponse({'code': 501, 'msg': "查找用户不存在"})
+            print("------------------------------")
+            print(user.avatar.path)
+            print(user.avatar)
             user_data = {
                 'id': user.id,
                 'username': user.username,
@@ -127,4 +130,3 @@ def updateperson(request):
                 'delete_mark': user.delete_mark,
             }
             return JsonResponse({'code': 200, 'user': user_data, 'msg': "查找用户信息：success"})
-
