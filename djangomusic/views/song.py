@@ -49,6 +49,14 @@ def clearHistoryById(request):
     models.userMusic.objects.filter(user_id=userId).all().delete()
     return JsonResponse({'code': 200, 'msg': "success"})
 
+
+
+@csrf_exempt
+def get_urls(request):
+    urls = list(models.sysMusic.objects.values_list('url', flat=True))
+    return JsonResponse(urls, safe=False)
+
+
 @csrf_exempt
 def serMusic(request):
     # 传参type+serName,根据type查询具体的榜单

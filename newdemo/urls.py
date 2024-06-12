@@ -43,6 +43,10 @@ urlpatterns = [
     # 新增歌曲表单填写
     path('song/addMusic/', song.addMusic),
 
+    path('get_urls/', song.get_urls),
+
+    path('getMusic/<int:mid>', song.getMusic),
+
     # ai生成新歌曲
     path('song/createMusic/', song.createMusic),
 
