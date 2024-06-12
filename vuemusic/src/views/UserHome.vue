@@ -3,22 +3,21 @@
 <template>
   <el-container>
     <el-header>
-      <el-row class="grid-content bg-black-light audio"></el-row>
-
-      <div class="audio audioControler">
-          <audio controls :src="MusicUrl" style="width: 1150px" autoplay></audio>
-      </div>
-      <div style="left: 50px" class="audio audioButton">
-        <el-button style="width: 60px;height: 40px;">
+      <template #default="scope">
+        <el-row class="grid-content bg-black-light audio"></el-row>
+        <div class="audio audioControler">
+          <audio  ref="audioplayer"  controls :src="MusicUrl" style="width: 1150px" autoplay></audio>
+        </div>
+        <div style="left: 50px" class="audio audioButton">
+          <el-button style="width: 60px;height: 40px;">
           <el-icon><ArrowLeftBold /></el-icon>
         </el-button>
-      </div>
-      <div class="audio audioButton" style="left: 150px;">
-        <el-button style="width: 60px;height: 40px;">
-          <el-icon size="large"><ArrowRightBold /></el-icon>
-        </el-button>
-      </div>
-
+        </div>
+        <div class="audio audioButton" style="left: 150px;">
+          <el-button style="width: 60px;height: 40px;">
+            <el-icon size="large"><ArrowRightBold /></el-icon>
+          </el-button>
+        </div>
       <el-row class="grid-content bg-black-light head-button" :gutter="16">
         <el-col :span="3"></el-col>
         <el-col :span="3" style="text-align: center" class="grid-content"><div style="margin-top: 16px;font-size: 28px">音你心动</div></el-col>
@@ -65,6 +64,7 @@
         </el-col>
         <el-col :span="3"></el-col>
       </el-row>
+      </template>
     </el-header>
     <el-main style="z-index: 1">
       <el-row :gutter="20">
@@ -132,7 +132,7 @@
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
 <!--                      均可播放-->
-                      <el-button type="primary" @click="display(scope.row)"> 播 放 </el-button>
+                      <el-button type="primary" @click="display(scope.row);display2(scope.row.url)"> 播 放 </el-button>
 <!--                      未上传可修改，上传，，其他只可查看-->
                       <el-button type="success" v-if="scope.row.is_upload !== 0" @click="openUploadView('had', 'music', scope.row.id)"> 查 看 </el-button>
                       <el-button type="success" v-if="scope.row.is_upload === 0" @click="openUploadView('had', 'music', scope.row.id)"> 修 改 </el-button>
@@ -223,7 +223,7 @@
                   <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button type="primary" @click="display(scope.row)"> 播 放 </el-button>
+                      <el-button type="primary" @click="display(scope.row);display2(scope.row.url)"> 播 放 </el-button>
                       <el-button type="primary" @click="like(scope.row, 'music')"> 点 赞 </el-button>
                       <el-button type="success" @click="comment(scope.row)"> 评 论 </el-button>
                       <el-button type="success" v-if="user.id !== songListNow.uid " @click="add(scope.row)"> 添加至 我的歌单 </el-button>
@@ -247,7 +247,7 @@
                   <el-table-column prop="number" label="播放次数"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button type="primary" @click="display(scope.row)"> 播 放 </el-button>
+                      <el-button type="primary" @click="display(scope.row);display2(scope.row.url)"> 播 放 </el-button>
                       <el-button type="success" @click="comment(scope.row)"> 评 论 </el-button>
                       <el-button type="success" v-if="user.id !== songListNow.uid " @click="add(scope.row)"> 添加至 我的歌单 </el-button>
                       <el-button type="success" v-if="user.id === songListNow.uid && songListNow.is_upload === 0" @click="delAnyById('musicCollect', scope.row.id)"> 删 除 </el-button>
@@ -279,7 +279,7 @@
                   <el-table-column prop="auditContent" label="审核结果"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button type="primary" v-if="scope.row.is_upload !== 2" @click="getSongMusic(scope.row)"> 播放并查看 </el-button>
+                      <el-button type="primary" v-if="scope.row.is_upload !== 2" @click="getSongMusic(scope.row);display2(scope.row.url)"> 播放并查看 </el-button>
                       <el-button type="primary" v-if="scope.row.is_upload === 1" @click="press"> 催 办 </el-button>
                       <el-button type="primary" v-if="scope.row.is_upload === 0" @click="openUploadView('had', 'songList', scope.row.id)"> 修 改 </el-button>
                       <el-button type="primary" v-if="scope.row.is_upload === 0" @click="upload('songList', scope.row)"> 上 传 </el-button>
@@ -300,7 +300,7 @@
                   <el-table-column prop="support" label="点赞数"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button type="primary" @click="getSongMusic(scope.row)"> 播放并查看 </el-button>
+                      <el-button type="primary" @click="getSongMusic(scope.row);display2(scope.row.url)"> 播放并查看 </el-button>
                       <el-button type="primary" @click="delAnyById('collect', scope.row.id)"> 取消收藏 </el-button>
                     </template>
                   </el-table-column>
@@ -508,6 +508,7 @@ export default {
   name: "adminHomeView",
   data() {
     return {
+      mode:'repeat',
       MusicUrl:'',
       currentIndex:'',
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
@@ -747,6 +748,19 @@ export default {
     {
       this.MusicUrl = MusicRrl;
       this.$refs.audioplayer.play();
+    },
+    nextMusic(row)
+    {
+      this.$refs.audioplayer.play();
+    },
+    PlayModel(row) {
+      if (this.mode == "repeat") {
+        this.MusicUrl = row.url;
+        this.$refs.audioplayer.play();
+      }
+      if (this.mode == "loop") {
+        this.nextMusic();
+      }
     },
     comment(row) {
       //   评论歌曲
