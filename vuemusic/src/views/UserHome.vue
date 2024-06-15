@@ -784,7 +784,7 @@ export default {
               .then(response => response.json())
               .then(data => {
                 if (data.code === 200) {
-                  this.getListenedById()
+                  if(this.getType==='listened') this.getListenedById()
                 }
                 this.$notify({
                   title: data.msg
