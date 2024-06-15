@@ -116,7 +116,8 @@
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
                       <p>{{this.currentIndex}}</p>
-                      <el-button  text style="border: none" @click="display(scope.row);display2(scope.row.id)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
+                      <p>{{this.MusicNumber}}</p>
+                      <el-button  text style="border: none" @click="display(scope.row);display2(scope.row.index+1)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
                       <el-button  text @click="like(scope.row,'music')"> 点 赞 </el-button>
                       <el-button   @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
                       <el-button type="success" @click="add(scope.row)"> 添加至 我的歌单 </el-button>
@@ -139,7 +140,7 @@
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
 <!--                      均可播放-->
-                      <el-button @click="display(scope.row);display2(scope.row.url)"><el-icon><VideoPlay /></el-icon></el-button>
+                      <el-button @click="display(scope.row);display2(scope.row.index+1)"><el-icon><VideoPlay /></el-icon></el-button>
 <!--                      未上传可修改，上传，，其他只可查看-->
                       <el-button type="success" v-if="scope.row.is_upload !== 0" @click="openUploadView('had', 'music', scope.row.id)"> 查 看 </el-button>
                       <el-button type="success" v-if="scope.row.is_upload === 0" @click="openUploadView('had', 'music', scope.row.id)"> 修 改 </el-button>
@@ -230,7 +231,7 @@
                   <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button style="border: none" @click="display(scope.row);display2(scope.row.id)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
+                      <el-button style="border: none" @click="display(scope.row);display2(scope.row.index+1)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
                       <el-button type="primary" @click="like(scope.row, 'music')"> 点 赞 </el-button>
                       <el-button type="success" @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
                       <el-button type="success" v-if="user.id !== songListNow.uid " @click="add(scope.row)"> 添加至 我的歌单 </el-button>
@@ -254,7 +255,7 @@
                   <el-table-column prop="number" label="播放次数"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button style="border: none" @click="display(scope.row);display2(scope.row.id)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
+                      <el-button style="border: none" @click="display(scope.row);display2(scope.row.index+1)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
                       <el-button type="success" @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
                       <el-button type="success" v-if="user.id !== songListNow.uid " @click="add(scope.row)"> 添加至 我的歌单 </el-button>
                       <el-button type="success" v-if="user.id === songListNow.uid && songListNow.is_upload === 0" @click="delAnyById('musicCollect', scope.row.id)"> 删 除 </el-button>
@@ -286,7 +287,7 @@
                   <el-table-column prop="auditContent" label="审核结果"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button style="border: none" v-if="scope.row.is_upload !== 2" @click="getSongMusic(scope.row);display2(scope.row.id)"> 播放并查看 </el-button>
+                      <el-button style="border: none" v-if="scope.row.is_upload !== 2" @click="getSongMusic(scope.row);display2(scope.row.index+1)"> 播放并查看 </el-button>
                       <el-button style="border: none" v-if="scope.row.is_upload === 1" @click="press"> 催 办 </el-button>
                       <el-button style="border: none" v-if="scope.row.is_upload === 0" @click="openUploadView('had', 'songList', scope.row.id)"> 修 改 </el-button>
                       <el-button style="border: none" v-if="scope.row.is_upload === 0" @click="upload('songList', scope.row)"> 上 传 </el-button>
@@ -307,7 +308,7 @@
                   <el-table-column prop="support" label="点赞数"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button type="primary" @click="getSongMusic(scope.row);display2(scope.row.id)"> 播放并查看 </el-button>
+                      <el-button type="primary" @click="getSongMusic(scope.row);display2(scope.row.index+1)"> 播放并查看 </el-button>
                       <el-button type="primary" @click="delAnyById('collect', scope.row.id)"> 取消收藏 </el-button>
                     </template>
                   </el-table-column>
@@ -327,7 +328,7 @@
                 <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>
                 <el-table-column label="操作" width="500" align="center">
                   <template #default="scope">
-                    <el-button style="border: none" @click="display(scope.row);display2(scope.row.id)"><el-icon style="font-size: 20px"><VideoPlay /></el-icon></el-button>
+                    <el-button style="border: none" @click="display(scope.row);display2(scope.row.index+1)"><el-icon style="font-size: 20px"><VideoPlay /></el-icon></el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -373,7 +374,7 @@
                   <el-table-column prop="duration_time" label="歌曲时长" width="150"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button type="primary" @click="display(scope.row);display2(scope.row.id)"> 播 放 </el-button>
+                      <el-button type="primary" @click="display(scope.row);display2(scope.row.index+1)"> 播 放 </el-button>
                       <el-button type="primary" @click="like(scope.row,'music')"> 点 赞 </el-button>
                       <el-button type="success" @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
                       <el-button type="success" @click="add(scope.row)"> 添加至 我的歌单 </el-button>
@@ -517,7 +518,7 @@ export default {
     return {
       isRepeat:1,
       MusicUrls: [],
-      MusicNumber:4,
+      MusicNumber:1,
       MusicUrl:[],
       currentIndex:'',
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
@@ -703,6 +704,7 @@ export default {
           .then(data => {
             if (data.code === 200) {
               this.musicListened = data.musicList
+              this.MusicNumber = data.sum
             }
             this.$notify({
               title: data.msg
@@ -789,14 +791,14 @@ export default {
                 });
               })
     },
-    display2(id)
+    display2(index)
     {
-      this.currentIndex = id;
-      this.MusicUrl = this.MusicUrls[id-1];
+      this.currentIndex = index;
+      this.MusicUrl = this.musicListAll[index-1].url
       this.$refs.audioplayer.play();
     },
     nextMusic(){
-      if(this.currentIndex==this.MusicNumber)
+      if(this.currentIndex>=this.MusicNumber)
       {
         this.currentIndex = 1;
         this.display2(this.currentIndex);
