@@ -20,16 +20,16 @@ def serSongList(request):
     serSName = data.get('serSName')
     if type == 'get':
         listMine=[]
-        indexc=0
         songListMine = models.songList.objects.filter(name__icontains=serSName, uid=userId, delete_mark=0).order_by('-upload_date', '-create_date').all()
-        getsongAll(listMine, songListMine,indexc)
+        indexm = getsongAll(listMine, songListMine)
+
         listCollect=[]
         sids = models.listUser.objects.filter(user_id=userId, delete_mark=0).all()
-        indexm = 0
+        indexc = 0
         for sid in sids:
             songList = models.songList.objects.filter(id=sid.songList_id, name__icontains=serSName,  delete_mark=0).first()
             songList_data = {
-                'index': indexm,
+                'index': indexc,
                 'id': songList.id,
                 'name': songList.name,
                 'description': songList.description,
@@ -42,7 +42,7 @@ def serSongList(request):
                 'avatar': songList.get_avatar_url() if songList.avatar else None,
                 'owner': models.sysUser.objects.filter(id=songList.uid).first().username,
             }
-            indexm += 1
+            indexc += 1
             if songList.is_upload > 1:
                 audit = models.auditLog.objects.filter(id=songList.audit_id, delete_mark=0).first()
                 if audit is not None:
@@ -53,13 +53,13 @@ def serSongList(request):
         return JsonResponse({'code': 200,  'sumMine': indexm,  'sumCollect': indexc, 'listMine': listMine, 'listCollect': listCollect, 'msg': 'success'})
     elif type == 'hot':
         listHot = []
-        index=0
         songLists = models.songList.objects.filter(is_upload=3, delete_mark=0).order_by('-support').all()[:15]
-        getsongAll(listHot, songLists, index)
+        index = getsongAll(listHot, songLists)
         return JsonResponse({'code': 200,  'sum': index, 'listHot': listHot, 'msg': "success"})
 
 
-def getsongAll(list, songLists,index):
+def getsongAll(list, songLists):
+    index = 0
     for songList in songLists:
         songList_data = {
             'index': index,
@@ -83,6 +83,7 @@ def getsongAll(list, songLists,index):
                 auditContent = audit.msg_content
                 songList_data.update({'auditResult': auditResult, 'auditContent': auditContent})
         list.append(songList_data)
+    return index
 
 @csrf_exempt
 def addSongList(request):
