@@ -14,10 +14,9 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.views.static import serve
 
 from djangomusic.views import basicFuction, song, songList, comment, audit, admin
-from django.urls import path, re_path
+from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -43,15 +42,8 @@ urlpatterns = [
     # 新增歌曲表单填写
     path('song/addMusic/', song.addMusic),
 
-    path('get_urls/', song.get_urls),
-
-    path('getMusic/<int:mid>', song.getMusic),
-
     # ai生成新歌曲
     path('song/createMusic/', song.createMusic),
-
-    # 上传歌曲
-    path('song/uploadMusic/', song.uploadMusic),
 
     # 收藏歌曲至自己的歌单中
     path('song/collectMusicToList/', song.collectMusicToList),

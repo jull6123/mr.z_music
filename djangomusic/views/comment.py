@@ -80,26 +80,3 @@ def addComment(request):
         'pid': comment.pid,
     }
     return JsonResponse({'code': 200, 'comment': comment_data, 'msg': "success"})
-
-
-def delComment(request):
-    # 传参sysComment的id 删除评论 sysComment:delete_mark=1
-    data = json.loads(request.body)
-    cid = data.get("cid")
-    comment = models.sysComment.objects.filter(id=cid, delete_mark=0).first()
-    if comment is None:
-        return JsonResponse({'code': 501, 'msg': "评论不存在"})
-    comment.update(delete_mark=1)
-    return JsonResponse({'code': 200, 'msg': "success"})
-
-
-def supportComment(request):
-    # 传参sysComment的id 点赞评论 sysComment:support+1
-    data = json.loads(request.body)
-    cid = data.get("cid")
-    comment = models.sysComment.objects.filter(id=cid, delete_mark=0).first()
-    if comment is None:
-        return JsonResponse({'code': 501, 'msg': "评论不存在"})
-    comment.support += 1
-    comment.save()
-    return JsonResponse({'code': 200, 'msg': "success"})

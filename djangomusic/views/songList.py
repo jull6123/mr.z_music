@@ -198,40 +198,6 @@ def upload(request):
     return JsonResponse({'code': 200, 'msg': "success"})
 
 
-
-
-def delSongList(request):
-    # 传参songList的id+user+type 删除歌单 delete_mark=1
-    # type = “mine" 我的歌单 查询songList(id) delete_mark=1
-    # type = "collect" 我的收藏 查询listUser(songList_id+user_id) delete_mark=1
-    data = json.loads(request.body)
-    sid = data.get('sid')
-    userId = data.get('userId')
-    type = data.get('type')
-    if type == 'mine':
-        songList = models.songList.objects.filter(id=sid, delete_mark=0).first()
-        if songList is None:
-            return JsonResponse({'code': 501, 'msg': "歌单不存在"})
-        songList.update(delete_mark=1)
-        return JsonResponse({'code': 200, 'msg': "success"})
-    songListUser = models.listUser.objects.filter(user_id=userId, songList_id=sid, delete_mark=0).first()
-    if songListUser is None:
-        return JsonResponse({'code': 501, 'msg': "该收藏歌单不存在"})
-    songListUser.update(delete_mark=1)
-    return JsonResponse({'code': 200, 'msg': "success"})
-
-
-def supportSongList(request):
-    # 传参songList的id 点赞歌单 support+1
-    data = json.loads(request.body)
-    sid = data.get('sid')
-    songList = models.songList.objects.filter(id=sid, delete_mark=0).first()
-    if songList is None:
-        return JsonResponse({'code': 501, 'msg': "歌单不存在"})
-    songList.support += 1
-    songList.save()
-    return JsonResponse({'code': 200, 'msg': "success"})
-
 @csrf_exempt
 def collectSongList(request):
     # 传参songList的id+user 收藏歌单 add_listUser
