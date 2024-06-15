@@ -85,6 +85,7 @@
                 </div>
                 <el-table :data="musicListAll" border stripe :header-cell-class-name="'headerBg'"
                           style="margin-top: 30px">
+                  <el-table-column prop="index" label="下标" width="80"></el-table-column>
                   <el-table-column prop="name" label="歌曲名" width="250"></el-table-column>
                   <el-table-column prop="singer" label="歌手"></el-table-column>
                   <el-table-column prop="support" label="点赞数"></el-table-column>
@@ -113,6 +114,7 @@
                 </div>
                 <el-table :data="mymusicALL" border stripe :header-cell-class-name="'headerBg'"
                           style="margin-top: 30px">
+                  <el-table-column prop="index" label="下标" width="80"></el-table-column>
                   <el-table-column prop="name" label="歌曲名" width="250"></el-table-column>
                   <el-table-column prop="singer" label="歌手"></el-table-column>
                   <el-table-column prop="support" label="点赞数"></el-table-column>
@@ -207,6 +209,7 @@
                 <!--              歌单的歌曲列表-->
                 <el-table :data="songMusicList" border stripe :header-cell-class-name="'headerBg'"
                           style="margin-top: 30px">
+                  <el-table-column prop="index" label="下标" width="80"></el-table-column>
                   <el-table-column prop="name" label="歌曲名" width="250"></el-table-column>
                   <el-table-column prop="singer" label="歌手"></el-table-column>
                   <el-table-column prop="support" label="点赞数"></el-table-column>
@@ -262,6 +265,7 @@
                   <h1 style="text-align: center">我的歌单</h1>
                 </div>
                 <el-table :data="songListMine" border stripe :header-cell-class-name="'headerBg'">
+                  <el-table-column prop="index" label="下标" width="80"></el-table-column>
                   <el-table-column prop="name" label="名称" width="250"></el-table-column>
                   <el-table-column prop="number" label="歌曲数量"></el-table-column>
                   <el-table-column prop="support" label="点赞数"></el-table-column>
@@ -284,6 +288,7 @@
                   <h1 style="text-align: center">收藏歌单</h1>
                 </div>
                 <el-table :data="songListCollect" border stripe :header-cell-class-name="'headerBg'">
+                  <el-table-column prop="index" label="下标" width="80"></el-table-column>
                   <el-table-column prop="name" label="名称" width="250"></el-table-column>
                   <el-table-column prop="owner" label="所属者"></el-table-column>
                   <el-table-column prop="number" label="歌曲数量"></el-table-column>
@@ -304,6 +309,7 @@
                 <el-button type="primary" style="margin-bottom: 10px" @click="emptyListened"> 清空历史 </el-button>
               </div>
               <el-table :data="musicListened" border stripe :header-cell-class-name="'headerBg'">
+                <el-table-column prop="index" label="下标" width="80"></el-table-column>
                 <el-table-column prop="name" label="歌曲名" width="250"></el-table-column>
                 <el-table-column prop="singer" label="歌手"></el-table-column>
                 <el-table-column prop="listened_time" label="听歌时间"></el-table-column>
@@ -350,6 +356,7 @@
                 </div>
                 <el-table :data="selectedData" border stripe :header-cell-class-name="'headerBg'"
                           style="margin-top: 30px">
+                  <el-table-column prop="index" label="下标" width="80"></el-table-column>
                   <el-table-column prop="name" label="歌曲名" width="150"></el-table-column>
                   <el-table-column prop="singer" label="歌手"></el-table-column>
                   <el-table-column prop="support" label="点赞数"></el-table-column>

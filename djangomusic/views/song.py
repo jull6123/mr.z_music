@@ -18,10 +18,12 @@ def listHistoryById(request):
     userId = data.get('userId')
     uMusics = models.userMusic.objects.filter(user_id=userId).order_by('-listen_time').all()[:30]
     musicList = []
+    index = 0
     for uMusic in uMusics:
         music = models.sysMusic.objects.filter(id=uMusic.music_id, delete_mark=0).first()
         if music is not None:
             music_data = {
+                'index': index,
                 'id': music.id,
                 'name': music.name,
                 'singer': music.singer,
@@ -38,8 +40,9 @@ def listHistoryById(request):
                 'uid': music.uid,
                 'listened_time': uMusic.listen_time.strftime('%Y-%m-%d %H:%M:%S'),
             }
+            index += 1
             musicList.append(music_data)
-    return JsonResponse({'code': 200, 'musicList': musicList, 'msg': "success"})
+    return JsonResponse({'code': 200, 'sum': index, 'musicList': musicList, 'msg': "success"})
 
 @csrf_exempt
 def clearHistoryById(request):
@@ -69,6 +72,7 @@ def serMusic(request):
     serName = data.get('serName')
     userId = data.get('userId')
     list = []
+    index = 0
     if type == 'search':
         musicList = models.sysMusic.objects.filter(name__icontains=serName, singer__icontains=serName,
                                                    is_upload=3, delete_mark=0).order_by('-upload_time').all()
@@ -83,6 +87,7 @@ def serMusic(request):
         musicList = models.sysMusic.objects.filter(is_upload=3, mold=2, delete_mark=0).order_by('-upload_time').all()[:5]
     for music in musicList:
         music_data = {
+            'index': index,
             'id': music.id,
             'name': music.name,
             'singer': music.singer,
@@ -98,8 +103,9 @@ def serMusic(request):
             'pid': music.pid,
             'uid': music.uid,
         }
+        index += 1
         list.append(music_data)
-    return JsonResponse({'code': 200, 'musicList': list, 'msg': "success"})
+    return JsonResponse({'code': 200, 'sum': index, 'musicList': list, 'msg': "success"})
 
 
 @csrf_exempt

@@ -20,13 +20,16 @@ def serSongList(request):
     serSName = data.get('serSName')
     if type == 'get':
         listMine=[]
+        indexc=0
         songListMine = models.songList.objects.filter(name__icontains=serSName, uid=userId, delete_mark=0).order_by('-upload_date', '-create_date').all()
-        getsongAll(listMine, songListMine)
+        getsongAll(listMine, songListMine,indexc)
         listCollect=[]
         sids = models.listUser.objects.filter(user_id=userId, delete_mark=0).all()
+        indexm = 0
         for sid in sids:
             songList = models.songList.objects.filter(id=sid.songList_id, name__icontains=serSName,  delete_mark=0).first()
             songList_data = {
+                'index': indexm,
                 'id': songList.id,
                 'name': songList.name,
                 'description': songList.description,
@@ -39,6 +42,7 @@ def serSongList(request):
                 'avatar': songList.get_avatar_url() if songList.avatar else None,
                 'owner': models.sysUser.objects.filter(id=songList.uid).first().username,
             }
+            indexm += 1
             if songList.is_upload > 1:
                 audit = models.auditLog.objects.filter(id=songList.audit_id, delete_mark=0).first()
                 if audit is not None:
@@ -46,17 +50,19 @@ def serSongList(request):
                     auditContent = audit.msg_content
                     songList_data.update({'auditResult': auditResult, 'auditContent': auditContent})
             listCollect.append(songList_data)
-        return JsonResponse({'code': 200, 'listMine': listMine, 'listCollect': listCollect, 'msg': 'success'})
+        return JsonResponse({'code': 200,  'sumMine': indexm,  'sumCollect': indexc, 'listMine': listMine, 'listCollect': listCollect, 'msg': 'success'})
     elif type == 'hot':
         listHot = []
+        index=0
         songLists = models.songList.objects.filter(is_upload=3, delete_mark=0).order_by('-support').all()[:15]
-        getsongAll(listHot, songLists)
-        return JsonResponse({'code': 200, 'listHot': listHot, 'msg': "success"})
+        getsongAll(listHot, songLists, index)
+        return JsonResponse({'code': 200,  'sum': index, 'listHot': listHot, 'msg': "success"})
 
 
-def getsongAll(list, songLists):
+def getsongAll(list, songLists,index):
     for songList in songLists:
         songList_data = {
+            'index': index,
             'id': songList.id,
             'name': songList.name,
             'description': songList.description,
@@ -69,6 +75,7 @@ def getsongAll(list, songLists):
             'owner': models.sysUser.objects.filter(id=songList.uid).first().username,
             'avatar': songList.get_avatar_url() if songList.avatar else None,
         }
+        index += 1
         if songList.is_upload > 1:
             audit = models.auditLog.objects.filter(id=songList.audit_id, delete_mark=0).first()
             if audit is not None:
@@ -270,9 +277,11 @@ def getListById(request):
     mids = models.listMusic.objects.filter(songList_id=sid, delete_mark=0).all()
     print(mids)
     musicList = []
+    index = 0
     for mid in mids:
         music = models.sysMusic.objects.filter(id=mid.music_id).first()
         music_data = {
+            'index': index,
             'id': music.id,
             'name': music.name,
             'singer': music.singer,
@@ -292,6 +301,7 @@ def getListById(request):
             'pid': music.pid,
             'uid': music.uid,
         }
+        index += 1
         userName = parentName = auditorName = ""
         if music.mold != 1:
             userName = models.sysUser.objects.filter(id=music.uid, delete_mark=0).first().username
