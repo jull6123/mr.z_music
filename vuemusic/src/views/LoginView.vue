@@ -1,20 +1,32 @@
 <template>
+  <!--登录界面-->
   <div class="wrapper">
-    <div style="margin: 200px auto; background-color: #fff; width: 350px; height: 300px; padding: 20px; border-radius: 10px">
-      <div style="margin: 20px 0; text-align: center; font-size: 24px"><b>登 录</b></div>
+    
+    <div style="margin-top: 15%; margin-left: 38%; background-color: #fff; width: 400px; height: 250px; padding: 20px; border-radius: 10px">
+      <div style="margin: 10px 0; text-align: center; font-size: 24px"><b>登 录</b></div>
       <el-form :model="user" :rules="rules" ref="userForm">
         <el-form-item prop="username">
-          <el-input size="medium" style="margin: 10px 0" prefix-icon="el-icon-user"
-                    v-model="user.username"></el-input>
+
+          <el-icon size="large" color="grey" style="margin-left: 40px; " >
+            <User />
+          </el-icon>
+          <el-input  size="medium" class="input" :prefix-icon="User" placeholder="请输入账号"
+                     v-model="user.username"></el-input>
         </el-form-item>
+
         <el-form-item prop="password">
-          <el-input size="medium" style="margin: 10px 0" prefix-icon="el-icon-lock" show-password
+          <el-icon size="large" color="grey" style="margin-left: 40px; " >
+            <Lock />
+          </el-icon>
+          <el-input size="medium" class="input" :prefix-icon="el-icon-lock" show-password placeholder="请输入密码"
                     v-model="user.password"></el-input>
         </el-form-item>
+        
         <el-form-item style="margin-left: 70px; text-align: right">
-          <el-button type="primary" size="small" autocomplete="off" @click="login">登 录</el-button>
-          <el-button type="warning" size="small" autocomplete="off" @click="$router.push('/register')">注 册</el-button>
+          <el-button type="primary" size="medium" autocomplete="off" @click="login" style="margin-left: 5px; margin-right: 111px;">登 录</el-button>
+          <el-button type="warning" size="medium" autocomplete="off" @click="$router.push('/register')">注 册</el-button>
         </el-form-item>
+
       </el-form>
     </div>
   </div>
@@ -79,8 +91,11 @@ export default {
 <style>
 .wrapper {
   height: 100vh;
-  background-image: linear-gradient(to bottom right, #FC466B, #3F5EFB);
+  background-image: url("src/assets/image/background.png") ;
+  background-size:100%;
   overflow: hidden;
+  opacity: 0.75;
+
 }
 .loginButton{
   height: 35px;
@@ -90,13 +105,13 @@ export default {
 }
 .registerButton{
   height: 10px;
-  width: 65px;
+  width: 63px;
   margin-top: 12px;
 }
 .input{
   margin: 7px 0;
   width: 250px;
-  margin-left: 75px;
+  margin-left: 17px;
 }
 
 </style>
