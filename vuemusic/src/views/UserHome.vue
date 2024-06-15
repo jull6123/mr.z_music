@@ -517,7 +517,6 @@ export default {
   data() {
     return {
       isRepeat:1,
-      MusicUrls: [],
       MusicNumber:1,
       MusicUrl:[],
       currentIndex:'',
@@ -594,7 +593,7 @@ export default {
     }
   },
   mounted() {
-    this.getUrls();
+    this.getListenedById();
   },
   computed: {
     selectedData() {
@@ -626,18 +625,6 @@ export default {
         this.isRepeat=1;
       }
     },
-    getUrls(){
-      fetch('http://127.0.0.1:9001/get_urls/') // 替换为你的实际API端点URL
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-       .then(urls => {
-           this.MusicUrls = urls;
-        })
-     },
     getMusics(type) {
       const data = {
         type: type,
