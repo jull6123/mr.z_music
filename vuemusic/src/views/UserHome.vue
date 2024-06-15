@@ -4,7 +4,7 @@
       <template #default="scope">
         <el-row class="grid-content bg-black-light audio"></el-row>
         <div class="audio audioControler">
-          <audio  ref="audioplayer"  controls :src="MusicUrl" style="width: 1150px" autoplay></audio>
+          <audio  ref="audioplayer"  controls :src="MusicUrl" style="width: 1150px" autoplay @ended="playMode"></audio>
         </div>
         <div style="left: 50px" class="audio audioButton">
           <el-button style="width: 60px;height: 40px;" @click="previousMusic">
@@ -14,6 +14,12 @@
         <div class="audio audioButton" style="left: 150px;">
           <el-button style="width: 60px;height: 40px;">
             <el-icon size="large" @click="nextMusic"><ArrowRightBold /></el-icon>
+          </el-button>
+        </div>
+        <div class="audio audioButton" style="left: 1420px">
+          <el-button style="width: 80px" @click="changeMode">
+            <span v-if="this.isRepeat">单曲循环</span>
+            <span v-else>顺序播放</span>
           </el-button>
         </div>
       <el-row class="grid-content bg-black-light head-button" :gutter="16">
@@ -74,8 +80,7 @@
               <el-card class="box-card" style="height: 600px;font-size: 20px">
                 <h1>欢迎使用音你心动</h1>
                  <h2>本网站提供音乐播放和AI录歌</h2>
-                <p>{{this.MusicUrls[0]}}</p>
-                 <p>{{this.MusicNumber}}</p>
+                <p>{{this.musicListAll}}</p>
               </el-card>
             </div>
 
@@ -111,9 +116,9 @@
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
                       <p>{{this.currentIndex}}</p>
-                      <el-button style="border: none" @click="display(scope.row);display2(scope.row.id)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
-                      <el-button type="primary" @click="like(scope.row,'music')"> 点 赞 </el-button>
-                      <el-button type="success" @click="comment(scope.row)"> 评 论 </el-button>
+                      <el-button  text style="border: none" @click="display(scope.row);display2(scope.row.id)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
+                      <el-button  text @click="like(scope.row,'music')"> 点 赞 </el-button>
+                      <el-button   @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
                       <el-button type="success" @click="add(scope.row)"> 添加至 我的歌单 </el-button>
                     </template>
                   </el-table-column>
@@ -140,7 +145,7 @@
                       <el-button type="success" v-if="scope.row.is_upload === 0" @click="openUploadView('had', 'music', scope.row.id)"> 修 改 </el-button>
                       <el-button type="success" v-if="scope.row.is_upload === 0" @click="upload('music',  scope.row)"> 上 传 </el-button>
 <!--                      上传成功的-->
-                      <el-button type="success" v-if="scope.row.is_upload === 3" @click="comment(scope.row)"> 评 论 </el-button>
+                      <el-button type="success" v-if="scope.row.is_upload === 3" @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon> </el-button>
                       <el-button type="success" v-if="scope.row.is_upload === 3" @click="add(scope.row)"> 添加至 我的歌单 </el-button>
 <!--                      审核中的可催办-->
                       <el-button type="success" v-if="scope.row.is_upload === 1" @click="press"> 催 办 </el-button>
@@ -227,7 +232,7 @@
                     <template #default="scope">
                       <el-button style="border: none" @click="display(scope.row);display2(scope.row.id)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
                       <el-button type="primary" @click="like(scope.row, 'music')"> 点 赞 </el-button>
-                      <el-button type="success" @click="comment(scope.row)"> 评 论 </el-button>
+                      <el-button type="success" @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
                       <el-button type="success" v-if="user.id !== songListNow.uid " @click="add(scope.row)"> 添加至 我的歌单 </el-button>
                       <el-button type="success" v-if="user.id === songListNow.uid && songListNow.is_upload === 0" @click="delAnyById('musicCollect', scope.row.id)"> 删 除 </el-button>
                     </template>
@@ -250,7 +255,7 @@
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
                       <el-button style="border: none" @click="display(scope.row);display2(scope.row.id)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
-                      <el-button type="success" @click="comment(scope.row)"> 评 论 </el-button>
+                      <el-button type="success" @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
                       <el-button type="success" v-if="user.id !== songListNow.uid " @click="add(scope.row)"> 添加至 我的歌单 </el-button>
                       <el-button type="success" v-if="user.id === songListNow.uid && songListNow.is_upload === 0" @click="delAnyById('musicCollect', scope.row.id)"> 删 除 </el-button>
                     </template>
@@ -370,7 +375,7 @@
                     <template #default="scope">
                       <el-button type="primary" @click="display(scope.row);display2(scope.row.id)"> 播 放 </el-button>
                       <el-button type="primary" @click="like(scope.row,'music')"> 点 赞 </el-button>
-                      <el-button type="success" @click="comment(scope.row)"> 评 论 </el-button>
+                      <el-button type="success" @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
                       <el-button type="success" @click="add(scope.row)"> 添加至 我的歌单 </el-button>
                     </template>
                   </el-table-column>
@@ -400,7 +405,7 @@
                       <el-table-column prop="create_time" label="评论时间"></el-table-column>
                       <el-table-column label="操作" width="500" align="center">
                         <template #default="scope">
-                          <el-button type="primary" @click="opencomment(scope.row.id)"> 评论 </el-button>
+                          <el-button type="primary" @click="opencomment(scope.row.id)"><el-icon><Comment /></el-icon></el-button>
                           <el-button type="primary" @click="like(scope.row,'comment')"> 点赞 </el-button>
                           <el-button type="primary" v-if="scope.row.user_id === user.id" @click="delAnyById('comment', scope.row.id)"> 删除 </el-button>
                         </template>
@@ -419,7 +424,7 @@
                       <el-table-column prop="create_time" label="评论时间"></el-table-column>
                       <el-table-column label="操作" width="500" align="center">
                         <template #default="scope">
-                          <el-button type="primary" @click="opencomment(scope.row.id)"> 评论 </el-button>
+                          <el-button @click="opencomment(scope.row.id)"><el-icon><Comment /></el-icon></el-button>
                           <el-button type="primary" @click="like(scope.row,'comment')"> 点赞 </el-button>
                           <el-button type="primary" v-if="scope.row.user_id === user.id" @click="delAnyById('comment', scope.row.id)"> 删除 </el-button>
                         </template>
@@ -430,7 +435,7 @@
               </el-card>
               <template #footer>
                 <div class="dialog-footer">
-                  <el-button type="primary" @click="opencomment(0)"> 评 论 </el-button>
+                  <el-button  @click="opencomment(0)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
                   <el-button type="success" @click="dialogFormVisibleC = false"> back </el-button>
                 </div>
               </template>
@@ -510,9 +515,9 @@ export default {
   name: "adminHomeView",
   data() {
     return {
-      mode:'repeat',
+      isRepeat:1,
       MusicUrls: [],
-      MusicNumber:2,
+      MusicNumber:4,
       MusicUrl:[],
       currentIndex:'',
       user: localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
@@ -599,6 +604,27 @@ export default {
     this.load();
   },
   methods: {
+
+    playMode()
+    {
+      if(this.isRepeat==1)
+      {
+        this.display2(this.currentIndex);
+      }
+      if(this.isRepeat==0)
+      {
+        this.nextMusic();
+      }
+    },
+    changeMode()
+    {
+      if(this.isRepeat==1)
+      {
+        this.isRepeat=0;
+      }else {
+        this.isRepeat=1;
+      }
+    },
     getUrls(){
       fetch('http://127.0.0.1:9001/get_urls/') // 替换为你的实际API端点URL
       .then(response => {
@@ -1097,7 +1123,7 @@ export default {
 }
 .audio{
   position: fixed;
-  top: 790px;
+  top: 800px;
   width: 1700px;
   height: 150px;
   z-index: 2;
@@ -1105,9 +1131,10 @@ export default {
 .audioControler{
   left: 250px;
   width: 1150px;
+  top: 800px;
 }
 .audioButton{
-  top: 800px;
+  top: 810px;
   width: 100px;
   height: 100px;
 }
