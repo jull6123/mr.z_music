@@ -51,7 +51,7 @@ urlpatterns = [
     # 歌曲添加至 我听过的
     path('song/listenedMusic/', song.listenedMusic),
 
-
+    path('create/', song.create),
     # 歌单：增删改查+点赞+收藏+上传
     # 歌单搜索：我的歌单 + 我的收藏 + 热门歌单
     path('serSongList/', songList.serSongList),

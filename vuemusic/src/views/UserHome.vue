@@ -1,19 +1,19 @@
 <template>
-  <el-container>
+  <el-container class="background">
     <el-header>
       <template #default="scope">
         <el-row class="grid-content bg-black-light audio"></el-row>
         <div class="audio audioControler">
           <audio  ref="audioplayer"  controls :src="MusicUrl" style="width: 1150px" autoplay @ended="playMode"></audio>
         </div>
-        <div style="left: 50px" class="audio audioButton">
-          <el-button style="width: 60px;height: 40px;" @click="previousMusic">
-          <el-icon><ArrowLeftBold /></el-icon>
+        <div style="left: 70px" class="audio audioButton">
+          <el-button style="width: 50px;height: 40px;" @click="previousMusic">
+          <el-icon style="font-size: 24px"><ArrowLeftBold /></el-icon>
         </el-button>
         </div>
         <div class="audio audioButton" style="left: 150px;">
-          <el-button style="width: 60px;height: 40px;">
-            <el-icon size="large" @click="nextMusic"><ArrowRightBold /></el-icon>
+          <el-button style="width: 50px;height: 40px;">
+            <el-icon style="font-size: 24px" @click="nextMusic"><ArrowRightBold /></el-icon>
           </el-button>
         </div>
         <div class="audio audioButton" style="left: 1420px">
@@ -70,63 +70,58 @@
       </el-row>
       </template>
     </el-header>
-    <el-main style="z-index: 1">
+    <el-main style="z-index: 1;" >
       <el-row :gutter="20">
         <el-col :span="3"></el-col>
-        <el-col :span="18" class="grid-contents bg-purple-light">
+        <el-col :span="18" class="grid-contents">
           <div>
             <div style="margin: 10px 0" v-if="getType==='home'">
               <!--              搜索框-->
-              <el-card class="box-card" style="height: 600px;font-size: 20px">
+              <el-card class="box-card" style="height: 700px;width: 1000px;font-size: 20px;margin-left: 100px;opacity: 90%">
                 <h1>欢迎使用音你心动</h1>
                  <h2>本网站提供音乐播放和AI录歌</h2>
-                <p>{{this.musicListAll}}</p>
+                 <h2>1、在使用“歌声替换”功能之前，需准备10分钟以上的干净目标人声素材（无背景音乐、噪音）。</h2>
+                  <h2> 2、若声音素材达不到时长要求，可通过“声音克隆”功能扩充声音素材。</h2>
+                   <h2>3、准备1分钟左右的干净人声即可使用“声音克隆”功能克隆目标人声音色用以阅读文字。</h2>
+                   <h2>4、10分钟的阅读时长大致需要一篇4000字的文字素材。</h2>
               </el-card>
             </div>
-
             <!--        搜索        -->
             <div style="margin: 10px 0" v-if="getType==='search'">
 <!--              搜索框-->
-              <el-card class="box-card" :style="{ height: '80px' }">
+              <el-card class="box-card" style="height: 70px;opacity: 90%">
                 <span >热门歌曲：</span>
-                <span style="margin-left: 5px" v-for="(value, key) in hotMusic" :key="key" class="text item">
-                  <span style="margin-left: 5px" v-for="(val, keys) in value" :key="keys" class="text item">
-                    <template v-if="keys === 'name'">
-                      {{ val }}
-                    </template>
-                </span>
-                </span>
-
-                <el-input style="width: 200px" placeholder="请输入" suffix-icon="el-icon-message" class="ml-5"
+                <span>谁</span>
+                <el-input style="width: 200px;margin-left: 700px" placeholder="请输入想听的歌曲" suffix-icon="el-icon-message" class="ml-5"
                           v-model="searchData.serName" input-style="margin-left: 5px"></el-input>
-                <el-button class="ml-5" type="primary" @click="search">搜索</el-button>
-                <el-button type="warning" @click="reset">重置</el-button>
+                <el-button class="ml-5"  @click="search">搜索</el-button>
+                <el-button  @click="reset">重置</el-button>
               </el-card>
 <!--              已上传的全部音乐-->
-              <el-card class="box-card" :style="{ height: '600px' }">
-                <div slot="header" class="clearfix">
-                  <h1 style="text-align: center">音乐列表</h1>
-                </div>
-                <el-table :data="musicListAll" border stripe :header-cell-class-name="'headerBg'"
-                          style="margin-top: 30px">
+              <el-card class="box-card" style="height: 600px;opacity: 90%;margin-top: 10px">
+                <el-table :data="musicListAll" style="margin-top: 10px;height: 600px;" stripe>
                   <el-table-column prop="name" label="歌曲名" width="250"></el-table-column>
                   <el-table-column prop="singer" label="歌手"></el-table-column>
                   <el-table-column prop="support" label="点赞数"></el-table-column>
                   <el-table-column prop="duration_time" label="歌曲时长"></el-table-column>
-                  <el-table-column label="操作" width="500" align="center">
+                  <el-table-column label="" width="500" align="center">
                     <template #default="scope">
-                      <p>{{this.currentIndex}}</p>
-                      <p>{{this.MusicNumber}}</p>
-                      <el-button  text style="border: none" @click="display(scope.row);display2(scope.row.index+1)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
-                      <el-button  text @click="like(scope.row,'music')"> 点 赞 </el-button>
-                      <el-button   @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
-                      <el-button type="success" @click="add(scope.row)"> 添加至 我的歌单 </el-button>
+                      <el-tooltip content="播放" placement="top-end">
+                        <el-button  text style="border: none" @click="display(scope.row);display2(scope.row.index+1)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
+                      </el-tooltip>
+                      <el-tooltip content="点赞" placement="top-end">
+                        <el-button  text @click="like(scope.row,'music')"><svg width="30" height="30" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" class="video-like-icon video-toolbar-item-icon"><path fill-rule="evenodd" clip-rule="evenodd" d="M9.77234 30.8573V11.7471H7.54573C5.50932 11.7471 3.85742 13.3931 3.85742 15.425V27.1794C3.85742 29.2112 5.50932 30.8573 7.54573 30.8573H9.77234ZM11.9902 30.8573V11.7054C14.9897 10.627 16.6942 7.8853 17.1055 3.33591C17.2666 1.55463 18.9633 0.814421 20.5803 1.59505C22.1847 2.36964 23.243 4.32583 23.243 6.93947C23.243 8.50265 23.0478 10.1054 22.6582 11.7471H29.7324C31.7739 11.7471 33.4289 13.402 33.4289 15.4435C33.4289 15.7416 33.3928 16.0386 33.3215 16.328L30.9883 25.7957C30.2558 28.7683 27.5894 30.8573 24.528 30.8573H11.9911H11.9902Z" fill="currentColor"></path></svg></el-button>
+                      </el-tooltip>
+                      <el-tooltip content="评论区" placement="top-end">
+                        <el-button  @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
+                      </el-tooltip>
+                      <el-button  @click="add(scope.row)"> 添加至 我的歌单 </el-button>
                     </template>
                   </el-table-column>
                 </el-table>
               </el-card>
 <!--              我的上传或未上传的 除：上传失败的-->
-              <el-card class="box-card" :style="{ height: '400px' }" style="margin-top: 30px">
+              <el-card class="box-card" :style="{ height: '400px' }" style="margin-top: 10px;opacity: 85%">
                 <div slot="header" class="clearfix">
                   <h1 style="text-align: center">我的歌曲</h1>
                 </div>
@@ -159,7 +154,7 @@
             </div>
 
 <!--            推荐界面-->
-            <div style="margin: 10px 0" v-if="getType==='recommend'">
+            <div style="margin: 10px 0;opacity: 85%" v-if="getType==='recommend'">
               <!--              歌曲榜单推荐-->
               <el-card class="box-card" :style="{ height: '200px' }">
                 <div slot="header" class="clearfix">
@@ -217,9 +212,9 @@
                   </div>
 
                   <div style="padding-top: 30px; text-align: right;" >
-                    <el-button type="primary" v-if="songListNow.uid !== user.id" @click="like(songListNow,'songList')"> 点 赞 </el-button>
-                    <el-button type="primary" v-if="songListNow.uid !== user.id" @click="collect(songListNow)"> 收 藏 </el-button>
-                    <el-button type="primary" v-if="songListNow.uid === user.id &&　songListNow.is_upload === 0" @click="upload('songList', songListNow)"> 上 传 </el-button>
+                    <el-button  v-if="songListNow.uid !== user.id" @click="like(songListNow,'songList')"> 点 赞 </el-button>
+                    <el-button  v-if="songListNow.uid !== user.id" @click="collect(songListNow)"> 收 藏 </el-button>
+                    <el-button  v-if="songListNow.uid === user.id &&　songListNow.is_upload === 0" @click="upload('songList', songListNow)"> 上 传 </el-button>
                   </div>
                 </el-card>
                 <!--              歌单的歌曲列表-->
@@ -232,16 +227,16 @@
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
                       <el-button style="border: none" @click="display(scope.row);display2(scope.row.index+1)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
-                      <el-button type="primary" @click="like(scope.row, 'music')"> 点 赞 </el-button>
-                      <el-button type="success" @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
-                      <el-button type="success" v-if="user.id !== songListNow.uid " @click="add(scope.row)"> 添加至 我的歌单 </el-button>
-                      <el-button type="success" v-if="user.id === songListNow.uid && songListNow.is_upload === 0" @click="delAnyById('musicCollect', scope.row.id)"> 删 除 </el-button>
+                      <el-button  @click="like(scope.row, 'music')"> 点 赞 </el-button>
+                      <el-button  @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
+                      <el-button  v-if="user.id !== songListNow.uid " @click="add(scope.row)"> 添加至 我的歌单 </el-button>
+                      <el-button  v-if="user.id === songListNow.uid && songListNow.is_upload === 0" @click="delAnyById('musicCollect', scope.row.id)"> 删 除 </el-button>
                     </template>
                   </el-table-column>
                 </el-table>
               </el-card>
 <!--              单个的播放的歌曲列表-->
-              <el-card class="box-card" style="margin-top: 50px" v-if="toType==='music'" :style="{ height: '500px' }">
+              <el-card class="box-card" style="margin-top: 50px;opacity: 85%" v-if="toType==='music'" :style="{ height: '500px' }">
                 <div slot="header" class="clearfix">
                   <h2 style="text-align: center">歌 曲 列 表</h2>
                 </div>
@@ -256,9 +251,9 @@
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
                       <el-button style="border: none" @click="display(scope.row);display2(scope.row.index+1)"><el-icon style="font-size: 28px"><VideoPlay /></el-icon></el-button>
-                      <el-button type="success" @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
-                      <el-button type="success" v-if="user.id !== songListNow.uid " @click="add(scope.row)"> 添加至 我的歌单 </el-button>
-                      <el-button type="success" v-if="user.id === songListNow.uid && songListNow.is_upload === 0" @click="delAnyById('musicCollect', scope.row.id)"> 删 除 </el-button>
+                      <el-button  @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
+                      <el-button  v-if="user.id !== songListNow.uid " @click="add(scope.row)"> 添加至 我的歌单 </el-button>
+                      <el-button  text v-if="user.id === songListNow.uid && songListNow.is_upload === 0" @click="delAnyById('musicCollect', scope.row.id)"> 删 除 </el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -266,13 +261,13 @@
             </div>
 
 <!--            我的歌单-->
-            <div style="margin: 10px 0" v-if="getType==='songList'">
+            <div style="margin: 10px 0;opacity: 85%" v-if="getType==='songList'">
               <el-card class="box-card" :style="{ height: '80px' }">
                 <el-input style="width: 200px" placeholder="请输入歌单名" suffix-icon="el-icon-message" class="ml-5"
                           v-model="searchData.serSName" input-style="margin-left: 5px"></el-input>
-                <el-button class="ml-5" type="primary" @click="search">搜 索</el-button>
-                <el-button type="warning" @click="reset">重 置</el-button>
-                <el-button type="danger" @click="openUploadView('new', 'songList',0)">新 建</el-button>
+                <el-button class="ml-5"  @click="search">搜 索</el-button>
+                <el-button  @click="reset">重 置</el-button>
+                <el-button  @click="openUploadView('new', 'songList',0)">新 建</el-button>
               </el-card>
               <!--              我的歌单-->
               <el-card class="box-card" :style="{ height: '400px' }">
@@ -308,8 +303,8 @@
                   <el-table-column prop="support" label="点赞数"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button type="primary" @click="getSongMusic(scope.row);display2(scope.row.index+1)"> 播放并查看 </el-button>
-                      <el-button type="primary" @click="delAnyById('collect', scope.row.id)"> 取消收藏 </el-button>
+                      <el-button  @click="getSongMusic(scope.row);display2(scope.row.index+1)"> 播放并查看 </el-button>
+                      <el-button  @click="delAnyById('collect', scope.row.id)"> 取消收藏 </el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -317,9 +312,9 @@
             </div>
 
 <!--            我听过的-->
-            <div style="margin: 10px 0" v-if="getType==='listened'">
+            <div style="margin: 10px 0;opacity: 85%" v-if="getType==='listened'">
               <div>
-                <el-button type="primary" style="margin-bottom: 10px" @click="emptyListened"> 清空历史 </el-button>
+                <el-button style="margin-bottom: 10px" @click="emptyListened"> 清空历史 </el-button>
               </div>
               <el-table :data="musicListened" border stripe :header-cell-class-name="'headerBg'">
                 <el-table-column prop="name" label="歌曲名" width="250"></el-table-column>
@@ -335,25 +330,29 @@
             </div>
 
 <!--            ai-->
-            <div style="margin: 10px 0" v-if="getType==='ai'">
-              <el-card class="box-card" :style="{ height: '400px' }">
+            <div style="margin: 10px 0;opacity: 90%" v-if="getType==='ai'">
+              <el-card class="box-card" :style="{ height: '200px' }">
                 <div slot="header" class="clearfix">
                   <h1 style="text-align: center">歌曲榜单</h1>
                 </div>
                 <div class="photo-container">
                   <el-card class="photo-card">
                     <div slot="header" class="clearfix">
-                      <h1 style="text-align: center"></h1>
-                      <el-button  @click="createAI('1', this.aiurl, this.urls)"> 声音克隆 </el-button>
+                      <el-button  style="width: 200px;height: 100px;font-size: 24px" @click="createAI('1', this.aiurl, this.urls)"> 声音克隆 </el-button>
                     </div>
                   </el-card>
                   <el-card class="photo-card">
                    <div slot="header" class="clearfix">
-                      <h1 style="text-align: center"></h1>
-                      <el-button  @click="createAI('2', this.aiurl, this.urls)"> 音色替换 </el-button>
+                      <el-button  style="width: 200px;height: 100px;font-size: 24px" @click="createAI('2', this.aiurl, this.urls)"> 音色替换 </el-button>
                     </div>
                   </el-card>
                 </div>
+              </el-card>
+              <el-card style="font-size: 18px;height: 200px;margin-top: 10px">
+                <p style="margin-top: 40px">1、在使用“歌声替换”功能之前，需准备10分钟以上的干净目标人声素材（无背景音乐、噪音）。</p>
+                  <p> 2、若声音素材达不到时长要求，可通过“声音克隆”功能扩充声音素材。</p>
+                   <p>3、准备1分钟左右的干净人声即可使用“声音克隆”功能克隆目标人声音色用以阅读文字。</p>
+                   <p>4、10分钟的阅读时长大致需要一篇4000字的文字素材。</p>
               </el-card>
             </div>
 
@@ -376,10 +375,10 @@
                   <el-table-column prop="duration_time" label="歌曲时长" width="150"></el-table-column>
                   <el-table-column label="操作" width="500" align="center">
                     <template #default="scope">
-                      <el-button type="primary" @click="display(scope.row);display2(scope.row.index+1)"> 播 放 </el-button>
-                      <el-button type="primary" @click="like(scope.row,'music')"> 点 赞 </el-button>
-                      <el-button type="success" @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
-                      <el-button type="success" @click="add(scope.row)"> 添加至 我的歌单 </el-button>
+                      <el-button  @click="display(scope.row);display2(scope.row.index+1)"> 播 放 </el-button>
+                      <el-button  @click="like(scope.row,'music')"> 点 赞 </el-button>
+                      <el-button  @click="comment(scope.row)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
+                      <el-button  @click="add(scope.row)"> 添加至 我的歌单 </el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -391,13 +390,13 @@
                 width="1500"
                 align-center
             >
-              <el-card class="box-card" :style="{ height: '1000px' }">
+              <el-card class="box-card" :style="{ height: '650px' }">
                 <div slot="header" class="clearfix">
                   <h1 style="text-align: center"><< {{ musicCom.name }} >>评论区</h1>
                 </div>
                 <div>
                   <!--              热门评论-->
-                  <el-card class="box-card" :style="{ height: '400px' }" style="margin-top: 30px">
+                  <el-card class="box-card" :style="{ height: '300px' }" style="margin-top: 30px">
                     <div slot="header" class="clearfix">
                       <h1 style="text-align: center">热门评论</h1>
                     </div>
@@ -416,7 +415,7 @@
                     </el-table>
                   </el-card>
                   <!--              最新评论-->
-                  <el-card class="box-card" :style="{ height: '400px' }">
+                  <el-card class="box-card" style="height: 350px;">
                     <div slot="header" class="clearfix">
                       <h1 style="text-align: center">最新评论</h1>
                     </div>
@@ -439,7 +438,7 @@
               <template #footer>
                 <div class="dialog-footer">
                   <el-button  @click="opencomment(0)"><el-icon style="font-size: 24px"><Comment /></el-icon></el-button>
-                  <el-button type="success" @click="dialogFormVisibleC = false"> back </el-button>
+                  <el-button  @click="dialogFormVisibleC = false"><el-icon><Back /></el-icon></el-button>
                 </div>
               </template>
             </el-dialog>
@@ -646,6 +645,7 @@ export default {
           .then(response => response.json())
           .then(data => {
             if (data.code === 200) {
+              console.log(data)
               if (type === 'hot') this.hotMusic = data.musicList
               else if (type === 'new') this.newMusic = data.musicList
               else if (type === 'ai') this.aiMusic = data.musicList
@@ -752,7 +752,6 @@ export default {
             if (data.code === 200){
               this.aiurl = data.url1
               this.urls = data.url2
-              this.count=1;
             }
           })
       }else{
@@ -1033,6 +1032,7 @@ export default {
     },
     createAI(type, url1, url2){
       if (type === '1'){
+        console.log(url1)
         window.open(url1)
       }else{
         window.open(url2)
@@ -1121,7 +1121,7 @@ export default {
 }
 .grid-contents {
   border-radius: 6px;
-  min-height: 2500px;
+  min-height: 1150px;
 }
 .row-bg {
   padding: 10px 0;
@@ -1162,5 +1162,13 @@ export default {
   top: 810px;
   width: 100px;
   height: 100px;
+}
+.background{
+  background-image: url("../assets/image/background2.png");
+  z-index: 1;
+   width: 100%;
+  height: 100vh;
+  background-size: cover;
+  opacity: 90%;
 }
 </style>
