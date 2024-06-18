@@ -45,6 +45,8 @@ urlpatterns = [
 
     path('get_urls/', song.get_urls),
 
+    path('create/', song.create),
+
     path('getMusic/<int:mid>', song.getMusic),
 
     # ai生成新歌曲

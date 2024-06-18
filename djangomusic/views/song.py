@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import subprocess
 from datetime import timezone
 
 from django.core.files.storage import FileSystemStorage
@@ -344,4 +345,17 @@ def seconds_to_hms(seconds):
     seconds = seconds % 60
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
+@csrf_exempt
+def create(request):
+    python_path = "D:/mr.z_music/venv/Scripts/python.exe"
+    cmd = [python_path, 'D:/mr.z_music/GPT-SoVITS-beta0217fix2/GPT-SoVITS-beta0217fix2/webui.py']
+    subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                     cwd='D:/mr.z_music/GPT-SoVITS-beta0217fix2/GPT-SoVITS-beta0217fix2')
 
+    python_path = "D:/mr.z_music/venv/Scripts/python.exe"
+    cmd = [python_path, 'D:/mr.z_music/rvc/rvc/rvc/infer-web.py']
+    subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                     cwd='D:/mr.z_music/rvc/rvc/rvc')
+
+
+    return JsonResponse({'code': 200, 'url1': "http://localhost:9874/", 'url2': "http://localhost:7865/"})

@@ -58,8 +58,8 @@ export default {
                   if(data.user.role === 0) this.$router.push('/adminHome');
                   else if(data.user.role === 2) this.$router.push('/auditHome');
                   else
-                    this.$router.push('/UserHome');
-                    // this.$router.push('/userHome');
+                    //this.$router.push('/UserHome');
+                   this.$router.push({path: "/Userhome", query: {count: 0}});
                   // this.$router.push({path: "/uploadPost", query: {uploadMold: 'music', mid: 1}});
                   // this.$router.push({path: "/uploadPost", query: {uploadMold: 'music'}});
                   // this.$router.push({path: "/uploadPost", query: {uploadMold: 'songList', sid: 1}});

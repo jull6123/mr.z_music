@@ -331,12 +331,14 @@
                 <div class="photo-container">
                   <el-card class="photo-card">
                     <div slot="header" class="clearfix">
-                      <h1 style="text-align: center">ai生成</h1>
+                      <h1 style="text-align: center"></h1>
+                      <el-button  @click="createAI('1', this.aiurl, this.urls)"> 声音克隆 </el-button>
                     </div>
                   </el-card>
                   <el-card class="photo-card">
-                    <div slot="header" class="clearfix">
-                      <h1 style="text-align: center">ai生成</h1>
+                   <div slot="header" class="clearfix">
+                      <h1 style="text-align: center"></h1>
+                      <el-button  @click="createAI('2', this.aiurl, this.urls)"> 音色替换 </el-button>
                     </div>
                   </el-card>
                 </div>
@@ -507,6 +509,10 @@ export default {
       user:localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user")) : {},
       getType: this.$route.query.where ? this.$route.query.where : 'home', //home songMusic recommend search songList listened ai upload
 
+      aiurl: '',
+      urls:'',
+      count: 0,
+      //count: this.$route.query.count ? this.$route.query.count : 1,
       // 推荐
       nameBD:'',
       dialogFormVisibleBD:false, //榜单dialog
@@ -691,8 +697,31 @@ export default {
       this.getType = 'listened'
       this.getListenedById()
     },
+    aitest(){
+      console.log(this.count)
+      if (this.count === 0){
+        fetch('http://127.0.0.1:9001/create/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        })
+          .then(response => response.json())
+          .then(data => {
+            console.log(data)
+            if (data.code === 200){
+              this.aiurl = data.url1
+              this.urls = data.url2
+              this.count=1;
+            }
+          })
+      }else{
+        this.count = 1
+      }
+    },
     aiB(){
       this.getType = 'ai'
+      this.aitest()
     },
     search(){
       if (this.getType === 'search') {
@@ -937,6 +966,14 @@ export default {
               title: data.msg
             });
           })
+    },
+    createAI(type, url1, url2){
+      if (type === '1'){
+        window.open(url1)
+      }else{
+        window.open(url2)
+      }
+
     },
     delAnyById(type, id){
       const data = {
