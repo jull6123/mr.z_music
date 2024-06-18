@@ -54,13 +54,6 @@ def clearHistoryById(request):
     return JsonResponse({'code': 200, 'msg': "success"})
 
 
-
-@csrf_exempt
-def get_urls(request):
-    urls = list(models.sysMusic.objects.values_list('url', flat=True))
-    return JsonResponse(urls, safe=False)
-
-
 @csrf_exempt
 def serMusic(request):
     # 传参type+serName,根据type查询具体的榜单
@@ -251,46 +244,6 @@ def getMusic(mid):
 def createMusic(request):
     # 传参源music的id 生成ai
     return None
-
-def uploadMusic(request):
-    # 传参music的id ai有单独的上传按钮，修改sysMusic is_upload为1，add_auditLog，改sysMusic audit_id=id
-    data = json.loads(request.body)
-    mid = data.get('mid')
-    music = models.sysMusic.objects.filter(id=mid, delete_mark=0).first()
-    if music is None:
-        return JsonResponse({'code': 501, 'msg': "音乐不存在"})
-    audit = models.auditLog.objects.create(music_id=mid, audit_mold=0)
-    music.update(is_upload=1, audit_id=audit.id)
-    return JsonResponse({'code': 200, 'msg': "success"})
-
-
-def delMuisc(request):
-    # 传参music的id 删除音乐，修改sysMusic的delete_mark=1
-    #  mid+sid       自己的该歌单中删除某歌曲   listMusic delete_mark=1
-    data = json.loads(request.body)
-    mid = data.get('mid')
-    sid = data.get('sid')
-    type = data.get('type')
-    if type == "delm":
-        music = models.sysMusic.objects.filter(id=mid, delete_mark=0).first()
-        if music is None:
-            return JsonResponse({'code': 501, 'msg': "音乐不存在"})
-        music.update(delete_mark=1)
-        return JsonResponse({'code': 200, 'msg': "success"})
-    models.listMusic.objects.filter(music_id=mid, songList_id=sid).delete()
-    return JsonResponse({'code': 200, 'msg': "success"})
-
-
-def supportMusic(request):
-    # 传参music的id 点赞音乐，修改sysMusic的 support+1
-    data = json.loads(request.body)
-    mid = data.get('mid')
-    music = models.sysMusic.objects.filter(id=mid, delete_mark=0).first()
-    if music is None:
-        return JsonResponse({'code': 501, 'msg': "音乐不存在"})
-    music.support += 1
-    music.save()
-    return JsonResponse({'code': 200, 'msg': "success"})
 
 @csrf_exempt
 def collectMusicToList(request):

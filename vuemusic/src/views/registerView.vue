@@ -1,25 +1,40 @@
 <template>
   <!--注册界面-->
   <div class="wrapper">
-    <div style="margin: 200px auto; background-color: #fff; width: 350px; height: 400px; padding: 20px; border-radius: 10px">
+    <div style="margin-top: 12%; margin-left: 40%; background-color: #fff; width: 350px; height: 330px; padding: 20px; border-radius: 10px">
       <div style="margin: 20px 0; text-align: center; font-size: 24px"><b>注 册</b></div>
       <el-form :model="user" :rules="rules" ref="userForm">
+        <div style="display: flex;">
+          <el-icon size="large" color="grey" style="margin-top: 5px; margin-right: 8px" >
+            <User />
+          </el-icon>
         <el-form-item prop="username">
-          <el-input placeholder="请输入账号" size="medium" style="margin: 5px 0" prefix-icon="el-icon-user"
+          <el-input placeholder="请输入账号" size="medium" style="width: 280px;" :prefix-icon="el-icon-user"
                     v-model="user.username"></el-input>
         </el-form-item>
+        </div>
+        <div style="display: flex;">
+          <el-icon size="large" color="grey" style="margin-top: 5px; margin-right: 8px" >
+            <Message />
+          </el-icon>
         <el-form-item prop="email">
-          <el-input placeholder="请输入邮箱" size="medium" style="margin: 5px 0" prefix-icon="el-icon-user"
+          <el-input placeholder="请输入邮箱" size="medium" style="width: 280px;" :prefix-icon="el-icon-message"
                     v-model="user.email"></el-input>
         </el-form-item>
+        </div>
+        <div style="display: flex;">
+          <el-icon size="large" color="grey" style="margin-top: 5px; margin-right: 8px" >
+            <Lock />
+          </el-icon>
         <el-form-item prop="password">
-          <el-input placeholder="请输入密码" size="medium" style="margin: 5px 0" prefix-icon="el-icon-lock"
+          <el-input placeholder="请输入密码" size="medium" style="width: 280px;" :prefix-icon="el-icon-lock"
                     show-password
                     v-model="user.password"></el-input>
         </el-form-item>
+        </div>
         <el-form-item style="margin: 10px 0; text-align: right">
-          <el-button type="primary" size="small" autocomplete="off" @click="register">注 册</el-button>
-          <el-button type="warning" size="small" autocomplete="off" @click="$router.push('/')">返回登陆</el-button>
+          <el-button type="primary" size="middle" autocomplete="off" @click="register" style="margin-left: 26px; margin-right: 93px">确认注册</el-button>
+          <el-button type="warning" size="middle" autocomplete="off" @click="$router.push('/')">返回登陆</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -75,7 +90,9 @@ export default {
 <style>
 .wrapper {
   height: 100vh;
-  background-image: linear-gradient(to bottom right, #FC466B, #3F5EFB);
+  background-image: url("src/assets/image/background.png") ;
+  background-size:100%;
   overflow: hidden;
+  opacity: 0.75;
 }
 </style>
